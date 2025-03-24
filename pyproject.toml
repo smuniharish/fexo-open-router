@@ -1,0 +1,63 @@
+[project]
+requires-python = ">=3.12"
+name = "py-solr-search"
+description = "Python Solr Search Project"
+authors = [
+    {name="S MUNI HARISH", email="harishm@integramicro.com"}
+]
+readme = "README.md"
+
+[tool.poetry]
+version = "0.1.0"
+packages=[
+    {include = "app"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.1"
+pydantic = "^2.10.6"
+orjson = "^3.10.15"
+starlette = "^0.45.3"
+numpy = "^2.2.2"
+pandas = "^2.2.3"
+psutil = "^6.1.1"
+motor = "^3.7.0"
+pyspark = "^3.5.4"
+sentence-transformers = "^3.4.1"
+python-multipart = "^0.0.20"
+httpx = "^0.28.1"
+fastapi = {extras = ["standard"], version = "^0.115.8"}
+ruff = "^0.9.4"
+pre-commit = "^4.1.0"
+mypy = "^1.15.0"
+isodate = "^0.7.2"
+sqlalchemy = "^2.0.38"
+psycopg2 = "^2.9.10"
+alembic = "^1.14.1"
+asyncpg = "^0.30.0"
+
+
+[tool.poetry.group.dev.dependencies]
+nuitka = "^2.6.8"
+
+[tool.ruff]
+line-length = 1000
+target-version = "py312"
+fix = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[build-system]
+requires = ["poetry-core>=2.1.1"]
+build-backend = "poetry.core.masonry.api"
