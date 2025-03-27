@@ -120,6 +120,9 @@ async def search_item_name_with_vectors(text_query: str, lat: float, lon: float,
     if filters["domains_filter"] is not None:
         final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
         filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
+    if filters["item_category_id_filter"] is not None:
+        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
+        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join(filters['provider_names_filter'])}")
     if filters["item_selling_price_filter"] is not None:
@@ -185,6 +188,9 @@ async def search_item_name_string_with_vectors(text_query: str, lat: float, lon:
     if filters["domains_filter"] is not None:
         final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
         filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
+    if filters["item_category_id_filter"] is not None:
+        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
+        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join(filters['provider_names_filter'])}")
     if filters["item_selling_price_filter"] is not None:

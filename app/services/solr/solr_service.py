@@ -17,10 +17,10 @@ def process_document(document: RequestAddIndexDto) -> Any:
     item_name_vector = generate_text_embeddings(item_name).tolist()
     item_short_desc_vector = generate_text_embeddings(item_short_desc).tolist() if item_short_desc is not None else None
     item_long_desc_vector = generate_text_embeddings(item_long_desc).tolist() if item_long_desc is not None else None
-    # provider_name_vector = generate_text_embeddings(provider_name).tolist()
+    provider_name_vector = generate_text_embeddings(provider_name).tolist()
 
     item_name_suggester_payload = f"{document.item_symbol} | item_name"
-    provider_name_suggester_payload = " | provider_name"
+    provider_name_suggester_payload = f"{document.provider_symbol} | provider_name"
 
     provider_geo = f"{document.provider_geo_latitude},{document.provider_geo_longitude}"
 
@@ -61,6 +61,8 @@ def process_document(document: RequestAddIndexDto) -> Any:
         "item_cancellable_status": document.item_cancellable_status.value if document.item_cancellable_status is not None else None,
         "item_returnable_status": document.item_returnable_status.value if document.item_returnable_status is not None else None,
         "provider_name": provider_name,
+        "provider_name_vector": provider_name_vector,
+        "provider_symbol": document.provider_symbol,
         "provider_status": document.provider_status.value if document.provider_status is not None else None,
         "provider_geo": provider_geo,
         "provider_id": document.provider_id,

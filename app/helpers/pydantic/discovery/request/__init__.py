@@ -38,6 +38,7 @@ class SearchFiltersDto(BaseModel):
     provider_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Provider status filter")
     item_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Item status filter")
     domains_filter: Optional[List[str]] = Field(None, description="List of domains")
+    item_category_id_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="List of Item Category")
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
     item_selling_price_filter: Optional[Tuple[float, float]] = Field(None, description="Item selling price (min, max)")
     item_discount_percentage_filter: Optional[Tuple[float, float]] = Field(None, description="Item discount percentage (min, max)")

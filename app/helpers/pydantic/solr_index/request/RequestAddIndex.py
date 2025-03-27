@@ -50,6 +50,7 @@ class RequestAddIndexDto(BaseModel):
     item_timestamp: str = Field(..., description="item timestamp of the item")
     provider_timestamp: str = Field(..., description="provider timestamp of the item")
     item_symbol: Optional[str] = Field(None, description="item symbol of the item")
+    provider_symbol: Optional[str] = Field(None, description="item symbol of the item")
     item_veg: Optional[ItemVegOrNonVegEnum] = Field(None, description="item veg or non-veg of the item")
     item_nonveg: Optional[ItemVegOrNonVegEnum] = Field(None, description="item veg or non-veg of the item")
     item_discount_percentage: float = Field(0, description="item discount percentage of the item", ge=0, le=100)
