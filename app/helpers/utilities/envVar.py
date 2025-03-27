@@ -1,11 +1,16 @@
+import logging
 import os
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 env = os.getenv("ENV", "development")
 env_file = f".env.{env}"
 
 load_dotenv(env_file)
+
+print(f"loaded env print {env_file}")
 
 
 class EnvConfig:

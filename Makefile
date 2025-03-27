@@ -4,7 +4,15 @@ install:
 	poetry install
 
 start:
-	poetry run python main.py
+	${DOTENV_CMD} poetry run python main.py
+start-dev:
+	$(MAKE) start ENV=development
+
+start-staging:
+	$(MAKE) start ENV=staging
+
+start-production:
+	$(MAKE) start ENV=production
 
 update:
 	poetry update

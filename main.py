@@ -17,6 +17,7 @@ from app.routers import discovery, health, solr_index
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +66,7 @@ logger.info("Routers Initialized")
 
 
 def main() -> None:
-    uvicorn.run("main:app", host=envConfig.app_ip, port=envConfig.app_port, reload=envConfig.app_reload, workers=envConfig.app_workers, reload_excludes=["logs/*"])
+    uvicorn.run("main:app", host=envConfig.app_ip, port=envConfig.app_port, reload=envConfig.app_reload, workers=envConfig.app_workers, reload_excludes=["logs/*", "*.log", "**/**.log"])
 
 
 if __name__ == "__main__":

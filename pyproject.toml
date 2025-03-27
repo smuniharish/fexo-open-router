@@ -39,6 +39,7 @@ asyncpg = "^0.30.0"
 
 [tool.poetry.group.dev.dependencies]
 nuitka = "^2.6.8"
+dotenv-cli = "^3.4.1"
 
 [tool.ruff]
 line-length = 1000
