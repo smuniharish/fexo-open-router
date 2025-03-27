@@ -46,7 +46,6 @@ def process_document(document: RequestAddIndexDto) -> Any:
         "item_long_desc": item_long_desc,
         "item_long_desc_vector": item_long_desc_vector,
         "item_name_suggester_payload": item_name_suggester_payload,
-        "provider_name_suggester_payload": provider_name_suggester_payload,
         "item_selling_price": document.item_selling_price,
         "item_mrp_price": document.item_mrp_price,
         "item_discount_percentage": document.item_discount_percentage,
@@ -61,6 +60,7 @@ def process_document(document: RequestAddIndexDto) -> Any:
         "item_cancellable_status": document.item_cancellable_status.value if document.item_cancellable_status is not None else None,
         "item_returnable_status": document.item_returnable_status.value if document.item_returnable_status is not None else None,
         "provider_name": provider_name,
+        "provider_name_suggester_payload": provider_name_suggester_payload,
         "provider_name_vector": provider_name_vector,
         "provider_symbol": document.provider_symbol,
         "provider_status": document.provider_status.value if document.provider_status is not None else None,
@@ -70,6 +70,12 @@ def process_document(document: RequestAddIndexDto) -> Any:
         "provider_location_city": document.provider_location_city,
         "provider_location_area_code": document.provider_location_area_code,
         "provider_location_street": document.provider_location_street,
+        "provider_min_order_value": document.provider_min_order_value,
+        "provider_start_time_day": document.provider_start_time_day,
+        "provider_end_time_day": document.provider_end_time_day,
+        "provider_days": document.provider_days,
+        "provider_service_location_distance": document.provider_service_location_distance,
+        "provider_service_type": document.provider_service_type,
     }
     return doc
 

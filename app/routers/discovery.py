@@ -3,8 +3,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from app.helpers.constants.discovery.sorting_types import SortingTypesEnum
-from app.helpers.pydantic.discovery.request import SearchDto, SearchItemProviderNameSuggestDto
-from app.services.solr.discovery import search_item_name_string_with_vectors, search_item_name_with_vectors, search_provider_item_name_suggest
+from app.helpers.pydantic.discovery.request import SearchDto, SearchItemProviderNameSuggestDto, SearchProvidersDto
+from app.services.solr.discovery import search_item_name_string_with_vectors, search_item_name_with_vectors, search_provider_item_name_suggest, search_providers
 
 router = APIRouter(prefix="/discovery", tags=["discovery"])
 
@@ -51,6 +51,15 @@ async def search_item_name_string_with_vt(body: SearchDto) -> Any:
     final_sortby_value = body.sorted_by.value if body.sorted_by else SortingTypesEnum.RELEVANCE.value
     try:
         response = await search_item_name_string_with_vectors(body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, final_sortby_value, filters)
+        return {"data": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/search_providers")
+async def search_providers_route(body: SearchProvidersDto) -> Any:
+    try:
+        response = await search_providers(body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

@@ -55,6 +55,10 @@ class EnvConfig:
         return os.getenv("SOLR_URL", "")
 
     @property
+    def solr_base_url_v3(self) -> str:
+        return os.getenv("SOLR_URL_V3", "")
+
+    @property
     def solr_max_connections(self) -> int:
         return int(os.getenv("SOLR_MAX_CONNECTIONS", 10000000))
 

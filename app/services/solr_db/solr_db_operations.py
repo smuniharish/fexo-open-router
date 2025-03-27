@@ -9,7 +9,8 @@ from app.helpers.utilities.envVar import envConfig
 
 logger = logging.getLogger(__name__)
 
-SOLR_URL: str = envConfig.solr_base_url + "/update/json/docs"
+SOLR_URL: str = envConfig.solr_base_url_v3 + "/update/json/docs"
+# SOLR_URL: str = envConfig.solr_base_url + "/update/json/docs"
 
 
 async def index_documents(documents: List[dict]) -> Any:

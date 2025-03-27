@@ -64,6 +64,14 @@ class SearchFiltersDto(BaseModel):
         return value
 
 
+class SearchProviderFiltersDto(BaseModel):
+    provider_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Provider status filter")
+    item_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Item status filter")
+    domains_filter: Optional[List[str]] = Field(None, description="List of domains")
+    item_category_id_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="List of Item Category")
+    provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
+
+
 class SearchDto(BaseModel):
     search_text: str = Field(..., description="Search Text", min_length=3)
     latitude: float = Field(..., description="Latitude must be between -90 and 90, up to 6 decimal places")
@@ -73,6 +81,30 @@ class SearchDto(BaseModel):
     pageNo: int = Field(1, ge=1, description="Page number must be greater than or equal to 1")
     pageSize: int = Field(10, ge=1, le=100, description="Page size must be between 1 and 100")
     filters: Optional[SearchFiltersDto] = Field(None, description="Search Filters")
+
+    @field_validator("latitude")
+    def validate_latitude(cls, value: float) -> float:
+        if not (-90 <= value <= 90):
+            raise ValueError("Latitude must be between -90 and 90.")
+        if len(str(value).split(".")[1]) > 6:
+            raise ValueError("Latitude must not exceed 6 decimal places.")
+        return value
+
+    @field_validator("longitude")
+    def validate_longitude(cls, value: float) -> float:
+        if not (-180 <= value <= 180):
+            raise ValueError("Longitude must be between -180 and 180.")
+        if len(str(value).split(".")[1]) > 6:
+            raise ValueError("Longitude must not exceed 6 decimal places.")
+        return value
+
+
+class SearchProvidersDto(BaseModel):
+    latitude: float = Field(..., description="Latitude must be between -90 and 90, up to 6 decimal places")
+    longitude: float = Field(..., description="Longitude must be between -180 and 180")
+    radius_km: int = Field(10, description="Search radius in kilometers")
+    pageNo: int = Field(1, ge=1, description="Page number must be greater than or equal to 1")
+    pageSize: int = Field(10, ge=1, le=100, description="Page size must be between 1 and 100")
 
     @field_validator("latitude")
     def validate_latitude(cls, value: float) -> float:
