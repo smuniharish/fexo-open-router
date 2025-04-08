@@ -126,7 +126,7 @@ async def search_item_name_with_vectors(text_query: str, lat: float, lon: float,
         final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
         filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
     if filters["provider_names_filter"] is not None:
-        filter_query.append(f"provider_name_string:{' OR '.join(filters['provider_names_filter'])}")
+        filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["item_selling_price_filter"] is not None:
         min_price, max_price = filters["item_selling_price_filter"]
         filter_query.append(f"item_selling_price:[{min_price} TO {max_price}]")
@@ -194,7 +194,7 @@ async def search_item_name_string_with_vectors(text_query: str, lat: float, lon:
         final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
         filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
     if filters["provider_names_filter"] is not None:
-        filter_query.append(f"provider_name_string:{' OR '.join(filters['provider_names_filter'])}")
+        filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["item_selling_price_filter"] is not None:
         min_price, max_price = filters["item_selling_price_filter"]
         filter_query.append(f"item_selling_price:[{min_price} TO {max_price}]")
