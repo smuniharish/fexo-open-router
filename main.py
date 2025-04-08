@@ -66,7 +66,7 @@ logger.info("Routers Initialized")
 
 
 def main() -> None:
-    uvicorn.run("main:app", host=envConfig.app_ip, port=envConfig.app_port, reload=envConfig.app_reload, workers=envConfig.app_workers, reload_excludes=["logs/*", "*.log", "**/**.log"])
+    uvicorn.run("main:app", host=envConfig.app_ip, port=envConfig.app_port, reload=envConfig.app_reload, workers=envConfig.app_workers, reload_excludes=["logs/*", "*.log", "**/*.log"])
 
 
 if __name__ == "__main__":
