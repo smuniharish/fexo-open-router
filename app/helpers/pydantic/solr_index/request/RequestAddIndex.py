@@ -70,7 +70,7 @@ class RequestAddIndexDto(BaseModel):
     provider_min_order_value: float = Field(..., description="provider min order value")
     provider_start_time_day: int = Field(..., description="provider start time day", ge=0, le=2359)
     provider_end_time_day: int = Field(..., description="provider min order value", ge=0, le=2359)
-    provider_days: List[int] = Field(..., description="provider days (1-Monday to 7-sunday)", ge=1, le=7)
+    provider_days: List[int] = Field(..., description="provider days (1-Monday to 7-sunday)")
     provider_service_location_distance: float = Field(0, description="provider service location in km")
     provider_service_type: int = Field(..., description="provider service type (10 - 13)", ge=10, le=13)
 
@@ -106,3 +106,11 @@ class RequestAddIndexDto(BaseModel):
             return datetime.fromisoformat(value).isoformat()  # Validate and standardize
         except ValueError as e:
             raise ValueError(f"Invalid datetime: {value}") from e
+
+    @field_validator("provider_days", mode="before")
+    @classmethod
+    def validate_days_list(cls, values: List[int]) -> List[int]:
+        """Ensure the days are valid and given with in the range."""
+        if not all(1 <= day <= 7 for day in values):
+            raise ValueError(f"All days must be between 1 and 7. Received: {values}")
+        return values
