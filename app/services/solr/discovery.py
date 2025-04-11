@@ -245,30 +245,33 @@ async def search_item_name_string_with_vectors(text_query: str, lat: float, lon:
     return final_response
 
 
-async def search_providers(lat: float, lon: float, radius: int, page: int, rows_per_page: int) -> Any:
+async def search_providers(text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int) -> Any:
     # filter_query=[]
-    filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d = {radius}}}"]
+    filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}"]
     today: int = get_day_number()
     current_time: int = get_current_time()
 
     start = (page - 1) * rows_per_page
     params = {
         "defType": "edismax",
-        "q": filter_query,
-        "fl": f"id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,distance:geodist(),if(termfreq(provider_days,'{today}')>0,true,false) as serviceability,if(provider_start_time_day <= {current_time} AND provider_end_time_day >= {current_time},false,true) as closed",
+        "q": f"provider_name:{text_query}",
+        "fq": filter_query,
+        "fl": f'id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,serviceability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),distance:geodist()',
+        "sort": "geodist() asc",
         "sfield": "provider_geo",
         "pt": f"{lat},{lon}",
         "rows": rows_per_page,
         "start": start,
         "group": "true",
         "group.field": "provider_name_string",
-        "group.sort": "distance asc",
+        "group.sort": "geodist() asc",
         # "group.limit": 1,
         # "group.offset": start,
         # "group.ngroups": "true",
         "wt": "json",
     }
     solr_url = envConfig.solr_base_url + "/select"
+    print("solr request", params)
     results = await post_search_in_solr(solr_url, params)
     print("solr results", results)
     final_response = {"grouped": results["grouped"]}

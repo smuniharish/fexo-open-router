@@ -59,7 +59,7 @@ async def search_item_name_string_with_vt(body: SearchDto) -> Any:
 @router.post("/search_providers")
 async def search_providers_route(body: SearchProvidersDto) -> Any:
     try:
-        response = await search_providers(body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
+        response = await search_providers(body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

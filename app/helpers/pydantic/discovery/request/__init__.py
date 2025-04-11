@@ -100,6 +100,7 @@ class SearchDto(BaseModel):
 
 
 class SearchProvidersDto(BaseModel):
+    search_text: str = Field("*", description="Search Text", min_length=3)
     latitude: float = Field(..., description="Latitude must be between -90 and 90, up to 6 decimal places")
     longitude: float = Field(..., description="Longitude must be between -180 and 180")
     radius_km: int = Field(10, description="Search radius in kilometers")
