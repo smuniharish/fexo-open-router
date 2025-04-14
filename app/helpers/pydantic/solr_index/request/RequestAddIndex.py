@@ -111,6 +111,9 @@ class RequestAddIndexDto(BaseModel):
     @classmethod
     def validate_days_list(cls, values: List[int]) -> List[int]:
         """Ensure the days are valid and given with in the range."""
-        if not all(1 <= day <= 7 for day in values):
-            raise ValueError(f"All days must be between 1 and 7. Received: {values}")
-        return values
+        try:
+            if not all(1 <= day <= 7 for day in values):
+                raise ValueError(f"All days must be between 1 and 7. Received: {values}")
+            return values
+        except ValueError as e:
+            raise ValueError(f"Invalid provider days: {values}") from e
