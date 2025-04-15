@@ -66,7 +66,7 @@ class RequestAddIndexDto(BaseModel):
     provider_location_id: str = Field(..., description="provider location id of the item", min_length=1, max_length=50)
     provider_location_city: str = Field(..., description="provider location city of the item", min_length=1, max_length=50)
     provider_location_area_code: str = Field(..., description="provider location area code of the item", min_length=6, max_length=6)
-    provider_location_street: Optional[str] = Field(None, description="provider location street of the item", min_length=1, max_length=100)
+    provider_location_street: Optional[str] = Field(None, description="provider location street of the item", min_length=1, max_length=1000)
     provider_min_order_value: float = Field(..., description="provider min order value")
     provider_start_time_day: int = Field(..., description="provider start time day", ge=0, le=2359)
     provider_end_time_day: int = Field(..., description="provider min order value", ge=0, le=2359)
