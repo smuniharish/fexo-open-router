@@ -6,7 +6,7 @@ from app.services.solr_db.solr_db_operations import batch_index_to_solr
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 500
+BATCH_SIZE = 1000
 BATCH_TIME = 5
 
 queue: asyncio.Queue[Any] = asyncio.Queue()
