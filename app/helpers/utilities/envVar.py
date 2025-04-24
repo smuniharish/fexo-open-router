@@ -35,11 +35,15 @@ class EnvConfig:
         return os.getenv("MONGODB_URL", "")
 
     @property
+    def debug_logs_enabled(self) -> bool:
+        return eval(os.getenv("DEBUG_LOGS_ENABLED", "False"))
+
+    @property
     def mongo_db_username(self) -> str:
         return os.getenv("MONGO_AUTH_USERNAME", "")
 
     @property
-    def mongo_db_user_password(self) -> str:
+    def mongo_db_password(self) -> str:
         return os.getenv("MONGO_AUTH_PASSWORD", "")
 
     @property

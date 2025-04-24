@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Any
 
 from app.helpers.models.text_embeddings import generate_text_embeddings
@@ -6,6 +7,8 @@ from app.helpers.utilities.envVar import envConfig
 from app.helpers.utilities.get_current_time_number import get_current_time
 from app.helpers.utilities.get_day_number import get_day_number
 from app.services.solr_db.solr_db_operations import post_search_in_solr
+
+logger = logging.getLogger(__name__)
 
 
 async def search_item_name_suggester(text_query: str, lat: float | None, lon: float | None, radius: int | None) -> Any:
@@ -19,7 +22,7 @@ async def search_item_name_suggester(text_query: str, lat: float | None, lon: fl
             params["pt"] = f"{lat},{lon}"
         solr_url = envConfig.solr_base_url + "/select"
         results = await post_search_in_solr(solr_url, params)
-        print("solr results", results)
+        logger.debug(f"solr results: {results}")
         grouped_item_name_suggest = results.get("grouped", {}).get("item_name_suggest", {})
         if grouped_item_name_suggest:
             grouped_data = grouped_item_name_suggest.get("groups", [])
@@ -56,7 +59,7 @@ async def search_item_name_suggester(text_query: str, lat: float | None, lon: fl
             }
             return flat_response
     except Exception as e:
-        print("excetion search_item_name_suggester", str(e))
+        logger.error(f"excetion search_item_name_suggester {str(e)}")
 
 
 async def search_provider_name_suggester(text_query: str, lat: float | None, lon: float | None, radius: int | None) -> Any:
@@ -70,7 +73,7 @@ async def search_provider_name_suggester(text_query: str, lat: float | None, lon
             params["pt"] = f"{lat},{lon}"
         solr_url = envConfig.solr_base_url + "/select"
         results = await post_search_in_solr(solr_url, params)
-        print("solr results", results)
+        logger.debug(f"solr results: {results}")
         grouped_provider_name_suggest = results.get("grouped", {}).get("provider_name_suggest", {})
         if grouped_provider_name_suggest:
             grouped_data = grouped_provider_name_suggest.get("groups", [])
@@ -100,7 +103,7 @@ async def search_provider_name_suggester(text_query: str, lat: float | None, lon
                 }
                 return flat_response
     except Exception as e:
-        print("excetion search_provider_name_suggester", str(e))
+        logger.error(f"excetion search_provider_name_suggester:{str(e)}")
 
 
 async def search_provider_item_name_suggest(text_query: str, lat: float | None, lon: float | None, radius: int | None) -> Any:
@@ -111,8 +114,8 @@ async def search_provider_item_name_suggest(text_query: str, lat: float | None, 
 
 async def search_item_name_with_vectors(text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int, sorting_value: str, filters: Any) -> Any:
     sorting_dict = {"RELEVANCE": None, "DISTANCE_HIGH_TO_LOW": "geodist() desc", "DISTANCE_LOW_TO_HIGH": "geodist() asc", "PRICE_HIGH_TO_LOW": "item_selling_price desc", "PRICE_LOW_TO_HIGH": "item_selling_price asc"}
-    print("sorting value", sorting_value)
-    print("filters", filters)
+    logger.debug(f"sorting value :: {sorting_value}")
+    logger.debug(f"filters :: {filters}")
     # filter_query=[]
     filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d = {radius}}}"]
     if filters["provider_status_filter"] is not None:
@@ -172,15 +175,15 @@ async def search_item_name_with_vectors(text_query: str, lat: float, lon: float,
     }
     solr_url = envConfig.solr_base_url + "/select"
     results = await post_search_in_solr(solr_url, params)
-    print("solr results", results)
+    logger.debug("solr results", results)
     final_response = {"grouped": results["grouped"], "filters": results["facet_counts"]}
     return final_response
 
 
 async def search_item_name_string_with_vectors(text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int, sorting_value: str, filters: Any) -> Any:
     sorting_dict = {"RELEVANCE": None, "DISTANCE_HIGH_TO_LOW": "geodist() desc", "DISTANCE_LOW_TO_HIGH": "geodist() asc", "PRICE_HIGH_TO_LOW": "item_selling_price desc", "PRICE_LOW_TO_HIGH": "item_selling_price asc"}
-    print("sorting value", sorting_value)
-    print("filters", filters)
+    logger.debug("sorting value", sorting_value)
+    logger.debug("filters", filters)
     # filter_query = []
     filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d = {radius}}}"]
     if filters["provider_status_filter"] is not None:
@@ -240,7 +243,7 @@ async def search_item_name_string_with_vectors(text_query: str, lat: float, lon:
     }
     solr_url = envConfig.solr_base_url + "/select"
     results = await post_search_in_solr(solr_url, params)
-    print("solr results", results)
+    logger.debug("solr results", results)
     final_response = {"response": results["response"], "filters": results["facet_counts"]}
     return final_response
 
@@ -271,8 +274,8 @@ async def search_providers(text_query: str, lat: float, lon: float, radius: int,
         "wt": "json",
     }
     solr_url = envConfig.solr_base_url + "/select"
-    print("solr request", params)
+    logger.debug("solr request", params)
     results = await post_search_in_solr(solr_url, params)
-    print("solr results", results)
+    logger.debug("solr results", results)
     final_response = {"grouped": results["grouped"]}
     return final_response

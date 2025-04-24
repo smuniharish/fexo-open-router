@@ -80,8 +80,8 @@ def process_document(document: RequestAddIndexDto) -> Any:
         }
         return doc
     except Exception as e:
-            logger.error(e)
-            return None
+        logger.error(e)
+        return None
 
 
 async def add_to_index(document: RequestAddIndexDto) -> Any:
@@ -89,5 +89,12 @@ async def add_to_index(document: RequestAddIndexDto) -> Any:
     if doc:
         logger.info(doc["id"])
         result = await add_to_queue(doc)
+        return result
+    return None
+
+
+async def add_to_index_processed_document(docs: Any) -> Any:
+    if len(docs):
+        result = [await add_to_queue(doc) for doc in docs if doc is not None]
         return result
     return None

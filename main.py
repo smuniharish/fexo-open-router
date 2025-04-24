@@ -13,7 +13,7 @@ from app.config.orjsonConfig import ORJSONResponse
 from app.database.solr.db import close_client, get_client
 from app.helpers.utilities.envVar import envConfig
 from app.helpers.workers.solr_worker import solr_worker
-from app.routers import discovery, health, solr_index
+from app.routers import discovery, health, initial_index_from_db, solr_index
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
@@ -62,6 +62,7 @@ logger.info("Initializing Routers...")
 app.include_router(health.router)
 app.include_router(solr_index.router)
 app.include_router(discovery.router)
+app.include_router(initial_index_from_db.router)
 logger.info("Routers Initialized")
 
 
