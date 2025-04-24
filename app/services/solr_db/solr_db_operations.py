@@ -4,6 +4,7 @@ from typing import Any, List
 import httpx
 from fastapi import HTTPException
 
+from app.database.mongodb import update_indexed_field
 from app.database.solr.db import get_client
 from app.helpers.utilities.envVar import envConfig
 
@@ -18,7 +19,7 @@ async def index_documents(documents: List[dict]) -> Any:
     try:
         response = await client.post(SOLR_URL, json=documents, headers={"Content-Type": "application/json"})
         response.raise_for_status()
-        return {"indexed_documents": len(documents)}
+        return {"indexed_documents": documents}
     except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=500, detail=f"Solr indexing error:{str(e)}") from e
     except httpx.RequestError as e:
@@ -36,9 +37,10 @@ async def post_search_in_solr(solr_url: str, params: dict) -> Any:
 
 
 async def batch_index_to_solr(processed_documents: List[dict]) -> Any:
-    batch_size = 100
+    batch_size = 500
     for i in range(0, len(processed_documents), batch_size):
         batch = processed_documents[i : i + batch_size]
         result = await index_documents(batch)
-        logger.info(result)
+        indexed_ids = [doc["id"] for doc in result["indexed_documents"]]
+        await update_indexed_field(indexed_ids)
         return result

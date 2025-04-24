@@ -1,6 +1,6 @@
 [project]
 requires-python = ">=3.12"
-name = "py-solr-search"
+name = "py-solr-search-prod"
 description = "Python Solr Search Project"
 authors = [
     {name="S MUNI HARISH", email="harishm@integramicro.com"}

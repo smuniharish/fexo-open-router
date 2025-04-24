@@ -59,7 +59,7 @@ LOGGING_CONFIG = {
     "loggers": {
         "uvicorn": {
             "handlers": ["console"] if envConfig.app_reload else ["console", "file"],
-            "level": "INFO",
+            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
             "propagate": False,
         },
         "uvicorn.error": {
@@ -69,22 +69,22 @@ LOGGING_CONFIG = {
         },
         "uvicorn.access": {
             "handlers": ["console"] if envConfig.app_reload else ["console", "access_file", "error_file"],
-            "level": "INFO",
+            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
             "propagate": False,
         },
         "fastapi": {
             "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-            "level": "INFO",
+            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
             "propagate": False,
         },
         "app": {
             "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-            "level": "INFO",
+            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
             "propagate": False,
         },
     },
     "root": {
         "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-        "level": "INFO",
+        "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
     },
 }
