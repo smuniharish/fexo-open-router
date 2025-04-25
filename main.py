@@ -50,7 +50,7 @@ app = FastAPI(
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
         "identifier": "MIT",
     },
-    root_path="/ss",
+    root_path="/ss-prod",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
 )
