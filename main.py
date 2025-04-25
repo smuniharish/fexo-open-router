@@ -35,7 +35,7 @@ description = """
 Solr Search API helps you do awesome stuff. 🚀
 """
 app = FastAPI(
-    title="Search System",
+    title="Search System (PROD)",
     description=description,
     summary="Search System project",
     version="0.0.1",
