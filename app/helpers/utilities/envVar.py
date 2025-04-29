@@ -45,6 +45,14 @@ class EnvConfig:
     @property
     def mongo_db_password(self) -> str:
         return os.getenv("MONGO_AUTH_PASSWORD", "")
+    
+    @property
+    def mongo_auth_source(self) -> str:
+        return os.getenv("MONGO_AUTH_SOURCE", "")
+    
+    @property
+    def mongo_auth_mechanism(self) -> str:
+        return os.getenv("MONGO_AUTH_MECHANISM", "")
 
     @property
     def mongo_db_name(self) -> str:
