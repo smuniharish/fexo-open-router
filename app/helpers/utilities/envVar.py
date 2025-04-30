@@ -39,20 +39,20 @@ class EnvConfig:
         return eval(os.getenv("DEBUG_LOGS_ENABLED", "False"))
 
     @property
-    def mongo_db_username(self) -> str:
-        return os.getenv("MONGO_AUTH_USERNAME", "")
+    def mongo_db_username(self) -> str | None:
+        return os.getenv("MONGO_AUTH_USERNAME", None)
 
     @property
-    def mongo_db_password(self) -> str:
-        return os.getenv("MONGO_AUTH_PASSWORD", "")
+    def mongo_db_password(self) -> str | None:
+        return os.getenv("MONGO_AUTH_PASSWORD", None)
     
     @property
-    def mongo_auth_source(self) -> str:
-        return os.getenv("MONGO_AUTH_SOURCE", "")
+    def mongo_auth_source(self) -> str | None:
+        return os.getenv("MONGO_AUTH_SOURCE", None)
     
     @property
-    def mongo_auth_mechanism(self) -> str:
-        return os.getenv("MONGO_AUTH_MECHANISM", "")
+    def mongo_auth_mechanism(self) -> str | None:
+        return os.getenv("MONGO_AUTH_MECHANISM", None)
 
     @property
     def mongo_db_name(self) -> str:
