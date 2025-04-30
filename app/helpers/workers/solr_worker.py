@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 1000
 BATCH_TIME = 5
-MAX_QUEUE_SIZE = 100_000
+MAX_QUEUE_SIZE = 100000
 
 queue: asyncio.Queue[Any] = asyncio.Queue(maxsize=MAX_QUEUE_SIZE)
 batch: List[Any] = []
@@ -61,11 +61,11 @@ async def flush_batch() -> None:
     """Flush current batch to Solr."""
     if not batch:
         return
-
+    docs_to_send = batch.copy()
     try:
-        sanitized_batch = [sanitize_record(doc) for doc in batch.copy()]
+        sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
         await batch_index_to_solr(sanitized_batch)
-        logger.info(f"Flushed {len(batch)} documents to Solr")
+        logger.info(f"Flushed {len(docs_to_send)} documents to Solr")
     except Exception as e:
         logger.exception(f"Error flushing batch: {e}")
     finally:
