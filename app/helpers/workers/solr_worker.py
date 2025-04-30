@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from typing import Any, List
+import math
 
 from app.services.solr_db.solr_db_operations import batch_index_to_solr
 
@@ -48,6 +49,13 @@ async def add_to_queue(record: dict) -> Any:
     await queue.put(record)
     return record
 
+def sanitize_record(record: dict) -> dict:
+    def sanitize_value(value):
+        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+            return None  # or a default value like 0.0
+        return value
+
+    return {k: sanitize_value(v) for k, v in record.items()}
 
 async def flush_batch() -> None:
     """Flush current batch to Solr."""
@@ -55,7 +63,8 @@ async def flush_batch() -> None:
         return
 
     try:
-        await batch_index_to_solr(batch.copy())  # Always use copy to prevent mid-flush mutation
+        sanitized_batch = [sanitize_record(doc) for doc in batch.copy()]
+        await batch_index_to_solr(sanitized_batch)
         logger.info(f"Flushed {len(batch)} documents to Solr")
     except Exception as e:
         logger.exception(f"Error flushing batch: {e}")
