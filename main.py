@@ -37,7 +37,7 @@ description = """
 Solr Search API helps you do awesome stuff. 🚀
 """
 app_server = FastAPI(
-    title="Search System (PROD)",
+    title="Search System",
     description=description,
     summary="Search System project",
     version="0.0.1",
@@ -52,7 +52,7 @@ app_server = FastAPI(
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
         "identifier": "MIT",
     },
-    root_path="/ss-prod",
+    root_path="/ss",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
 )
