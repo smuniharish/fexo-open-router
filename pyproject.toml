@@ -37,6 +37,7 @@ asyncpg = "^0.30.0"
 sentence-transformers = "3.3.1"
 huggingface-hub = {extras = ["hf-xet"], version = "^0.30.2"}
 transformers = "^4.51.1"
+aiobreaker = "^1.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

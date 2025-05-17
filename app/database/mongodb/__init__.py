@@ -21,9 +21,9 @@ mongourl = f"mongodb://{MONGO_URL}"
 if MONGO_AUTH_USERNAME and MONGO_AUTH_PASSWORD:
     mongourl = f"mongodb://{MONGO_AUTH_USERNAME}:{MONGO_AUTH_PASSWORD}@{MONGO_URL}"
     if MONGO_AUTH_SOURCE:
-        mongourl+=f"?authSource={MONGO_AUTH_SOURCE}"
+        mongourl += f"?authSource={MONGO_AUTH_SOURCE}"
     if MONGO_AUTH_MECHANISM:
-        mongourl+=f"&authMechanism=${MONGO_AUTH_MECHANISM}"
+        mongourl += f"&authMechanism=${MONGO_AUTH_MECHANISM}"
 logger.info(f"final mongourl:{mongourl}")
 client: AsyncIOMotorClient = AsyncIOMotorClient(mongourl)
 

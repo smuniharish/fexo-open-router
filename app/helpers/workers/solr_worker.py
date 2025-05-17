@@ -1,17 +1,14 @@
 import asyncio
 import logging
-from typing import Any, List
 import math
+from typing import Any, Dict, List, Optional
 
+from app.helpers.utilities.envVar import envConfig
 from app.services.solr_db.solr_db_operations import batch_index_to_solr
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE = 1000
-BATCH_TIME = 5
-MAX_QUEUE_SIZE = 100000
-
-queue: asyncio.Queue[Any] = asyncio.Queue(maxsize=MAX_QUEUE_SIZE)
+queue: asyncio.Queue[Any] = asyncio.Queue(maxsize=envConfig.solr_max_queue_size)
 batch: List[Any] = []
 batch_lock = asyncio.Lock()
 
@@ -27,14 +24,14 @@ async def solr_worker() -> None:
         item = await queue.get()
         async with batch_lock:
             batch.append(item)
-            if len(batch) >= BATCH_SIZE:
+            if len(batch) >= envConfig.solr_batch_size:
                 await flush_batch()
 
 
 async def flush_timer() -> None:
     """Flushes batch every BATCH_TIME seconds regardless of size."""
     while True:
-        await asyncio.sleep(BATCH_TIME)
+        await asyncio.sleep(envConfig.solr_batch_time)
         async with batch_lock:
             if batch:
                 await flush_batch()
@@ -49,13 +46,15 @@ async def add_to_queue(record: dict) -> Any:
     await queue.put(record)
     return record
 
-def sanitize_record(record: dict) -> dict:
-    def sanitize_value(value):
+
+def sanitize_record(record: Dict[str, Any]) -> Dict[str, Optional[Any]]:
+    def sanitize_value(value: Any) -> Optional[Any]:
         if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
             return None  # or a default value like 0.0
         return value
 
     return {k: sanitize_value(v) for k, v in record.items()}
+
 
 async def flush_batch() -> None:
     """Flush current batch to Solr."""

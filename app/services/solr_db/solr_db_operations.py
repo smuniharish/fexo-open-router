@@ -5,7 +5,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.database.mongodb import update_indexed_field
-from app.database.solr.db import get_client
+from app.helpers.circuit_breakers.solr_circuit_client import circuit_http_client
 from app.helpers.utilities.envVar import envConfig
 
 logger = logging.getLogger(__name__)
@@ -15,9 +15,10 @@ SOLR_URL: str = envConfig.solr_base_url + "/update/json/docs"
 
 
 async def index_documents(documents: List[dict]) -> Any:
-    client = get_client()
+    # client = get_client()
     try:
-        response = await client.post(SOLR_URL, json=documents, headers={"Content-Type": "application/json"})
+        # response = await client.post(SOLR_URL, json=documents, headers={"Content-Type": "application/json"})
+        response = await circuit_http_client.request("POST", SOLR_URL, json=documents, headers={"Content-Type": "application/json"})
         response.raise_for_status()
         return {"indexed_documents": documents}
     except httpx.HTTPStatusError as e:
@@ -27,9 +28,10 @@ async def index_documents(documents: List[dict]) -> Any:
 
 
 async def post_search_in_solr(solr_url: str, params: dict) -> Any:
-    client = get_client()
+    # client = get_client()
     try:
-        response = await client.post(solr_url, data=params)
+        # response = await client.post(solr_url, data=params)
+        response = await circuit_http_client.request("POST", solr_url, data=params)
         response.raise_for_status()
         return response.json()
     except Exception as e:

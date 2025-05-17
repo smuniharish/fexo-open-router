@@ -45,11 +45,11 @@ class EnvConfig:
     @property
     def mongo_db_password(self) -> str | None:
         return os.getenv("MONGO_AUTH_PASSWORD", None)
-    
+
     @property
     def mongo_auth_source(self) -> str | None:
         return os.getenv("MONGO_AUTH_SOURCE", None)
-    
+
     @property
     def mongo_auth_mechanism(self) -> str | None:
         return os.getenv("MONGO_AUTH_MECHANISM", None)
@@ -77,6 +77,18 @@ class EnvConfig:
     @property
     def solr_keep_alive_expiry(self) -> int:
         return int(os.getenv("SOLR_KEEP_ALIVE_EXPIRY", 100))
+
+    @property
+    def solr_max_queue_size(self) -> int:
+        return int(os.getenv("SOLR_MAX_QUEUE_SIZE", 100000))
+
+    @property
+    def solr_batch_size(self) -> int:
+        return int(os.getenv("SOLR_BATCH_SIZE", 100))
+
+    @property
+    def solr_batch_time(self) -> int:
+        return int(os.getenv("SOLR_BATCH_TIME", 5))
 
 
 envConfig = EnvConfig()
