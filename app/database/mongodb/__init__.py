@@ -12,12 +12,18 @@ logger = logging.getLogger(__name__)
 MONGO_URL = envConfig.mongo_db_uri
 MONGO_AUTH_USERNAME = envConfig.mongo_db_username
 MONGO_AUTH_PASSWORD = envConfig.mongo_db_password
+MONGO_AUTH_SOURCE = envConfig.mongo_auth_source
+MONGO_AUTH_MECHANISM = envConfig.mongo_auth_mechanism
 DATABASE_NAME = envConfig.mongo_db_name
 COLLECTION_NAME = envConfig.mongo_db_collection_name
 
 mongourl = f"mongodb://{MONGO_URL}"
 if MONGO_AUTH_USERNAME and MONGO_AUTH_PASSWORD:
     mongourl = f"mongodb://{MONGO_AUTH_USERNAME}:{MONGO_AUTH_PASSWORD}@{MONGO_URL}"
+    if MONGO_AUTH_SOURCE:
+        mongourl += f"?authSource={MONGO_AUTH_SOURCE}"
+    if MONGO_AUTH_MECHANISM:
+        mongourl += f"&authMechanism=${MONGO_AUTH_MECHANISM}"
 logger.info(f"final mongourl:{mongourl}")
 client: AsyncIOMotorClient = AsyncIOMotorClient(mongourl)
 

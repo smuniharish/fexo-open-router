@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter
@@ -23,7 +24,8 @@ async def initial_process(body: RequestInitialIndexDb) -> dict[Any, Any]:
             processed_docs = create_process_in_pool(process_document, valid_docs)
             await add_to_index_processed_document(processed_docs)
         else:
-            for doc in valid_docs:
-                await add_to_index(doc)
+            # for doc in valid_docs:
+            #     await add_to_index(doc)
+            await asyncio.gather(*(add_to_index(doc) for doc in valid_docs))
         skip += batch
     return {"message": "initialized"}
