@@ -1,14 +1,8 @@
-from enum import Enum
 from typing import Any, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.helpers.constants.discovery.sorting_types import SortingTypesEnum
-
-
-class SearchFiltersProviderItemStatusDto(Enum):
-    enable = "enable"
-    disable = "disable"
+from app.helpers.Enums import SearchFiltersProviderItemStatusEnum, SortingTypesEnum
 
 
 class SearchItemProviderNameSuggestDto(BaseModel):
@@ -35,10 +29,10 @@ class SearchItemProviderNameSuggestDto(BaseModel):
 
 
 class SearchFiltersDto(BaseModel):
-    provider_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Provider status filter")
-    item_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Item status filter")
+    provider_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Provider status filter")
+    item_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Item status filter")
     domains_filter: Optional[List[str]] = Field(None, description="List of domains")
-    item_category_id_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="List of Item Category")
+    item_category_id_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="List of Item Category")
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
     item_selling_price_filter: Optional[Tuple[float, float]] = Field(None, description="Item selling price (min, max)")
     item_discount_percentage_filter: Optional[Tuple[float, float]] = Field(None, description="Item discount percentage (min, max)")
@@ -65,10 +59,10 @@ class SearchFiltersDto(BaseModel):
 
 
 class SearchProviderFiltersDto(BaseModel):
-    provider_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Provider status filter")
-    item_status_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="Item status filter")
+    provider_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Provider status filter")
+    item_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Item status filter")
     domains_filter: Optional[List[str]] = Field(None, description="List of domains")
-    item_category_id_filter: Optional[SearchFiltersProviderItemStatusDto] = Field(None, description="List of Item Category")
+    item_category_id_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="List of Item Category")
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
 
 

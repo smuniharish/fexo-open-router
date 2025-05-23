@@ -150,8 +150,8 @@ https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrco
          before flushing.
          If both ramBufferSizeMB and maxBufferedDocs is set, then
          Lucene will flush based on whichever limit is hit first.  -->
-    <!-- <ramBufferSizeMB>100</ramBufferSizeMB> -->
-    <!-- <maxBufferedDocs>1000</maxBufferedDocs> -->
+    <ramBufferSizeMB>2048</ramBufferSizeMB>
+    <maxBufferedDocs>20000</maxBufferedDocs>
 
     <!-- Expert: ramPerThreadHardLimitMB sets the maximum amount of RAM that can be consumed
          per thread before they are flushed. When limit is exceeded, this triggers a forced
@@ -168,13 +168,13 @@ https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrco
          The default since Lucene 2.3 was the LogByteSizeMergePolicy,
          Even older versions of Lucene used LogDocMergePolicy.
       -->
-    <!--
+    
         <mergePolicyFactory class="org.apache.solr.index.TieredMergePolicyFactory">
-          <int name="maxMergeAtOnce">10</int>
+          <int name="maxMergeAtOnce">20</int>
           <int name="segmentsPerTier">10</int>
           <double name="noCFSRatio">0.1</double>
         </mergePolicyFactory>
-      -->
+     
 
     <!-- Expert: Merge Scheduler
          The Merge Scheduler in Lucene controls how merges are
@@ -182,9 +182,9 @@ https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrco
          can perform merges in the background using separate threads.
          The SerialMergeScheduler (Lucene 2.2 default) does not.
      -->
-    <!--
+    
        <mergeScheduler class="org.apache.lucene.index.ConcurrentMergeScheduler"/>
-       -->
+      
 
     <!-- LockFactory
 
@@ -291,7 +291,8 @@ https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrco
          have some sort of hard autoCommit to limit the log size.
       -->
     <autoCommit>
-      <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+      <maxTime>${solr.autoCommit.maxTime:120000}</maxTime>
+      <maxDocs>20000</maxDocs>
       <openSearcher>false</openSearcher>
     </autoCommit>
 
@@ -302,7 +303,7 @@ https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrco
       -->
 
     <autoSoftCommit>
-      <maxTime>${solr.autoSoftCommit.maxTime:3000}</maxTime>
+      <maxTime>${solr.autoSoftCommit.maxTime:30000}</maxTime>
     </autoSoftCommit>
 
     <!-- Update Related Event Listeners

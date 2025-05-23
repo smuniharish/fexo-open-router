@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from app.helpers.constants.discovery.sorting_types import SortingTypesEnum
+from app.helpers.Enums import SortingTypesEnum
 from app.helpers.pydantic.discovery.request import SearchDto, SearchItemProviderNameSuggestDto, SearchProvidersDto
 from app.services.solr.discovery import search_item_name_string_with_vectors, search_item_name_with_vectors, search_provider_item_name_suggest, search_providers
 

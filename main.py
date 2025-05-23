@@ -1,36 +1,41 @@
-# import logging.config
-# logging.config.dictConfig(LOGGING_CONFIG)
 import app.logging_setup  # noqa
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import Any
-
+import asyncio
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.orjsonConfig import ORJSONResponse
-from app.database.solr.db import close_client, get_client
-from app.helpers.circuit_breakers.solr_circuit_client import circuit_http_client
+from app.database.solr.db import load_solr_client, close_solr_client
+from app.helpers.circuit_breakers.solr_circuit_client import start_circuit_http_client, stop_circuit_http_client
 from app.helpers.utilities.envVar import envConfig
-from app.helpers.workers.solr_worker import solr_worker
+from app.helpers.workers.solr_worker import start_solr_worker, stop_solr_worker
 from app.routers import discovery, health, initial_index_from_db, solr_index
+from app.database.mongodb import load_mongo_client, close_mongo_client
 
 logger = logging.getLogger(__name__)
+
+APP_IP = envConfig.app_ip
+APP_PORT = envConfig.app_port
+APP_RELOAD = envConfig.app_reload
+APP_WORKERS = envConfig.app_workers
+APP_DEBUG_LOGS_ENABLED = envConfig.debug_logs_enabled
 
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> Any:
+    logger.info("Initializing MongoDB client...")
+    load_mongo_client()
     logger.info("Initializing Solr client...")
-    get_client()
-    logger.info("Starting Solr worker...")
-    asyncio.create_task(solr_worker())
-    logger.info("Starting Solr retry queue...")
-    await circuit_http_client.start()
+    load_solr_client()
+    logger.info("Starting Solr worker and retry queue...")
+    await asyncio.gather(start_solr_worker(), start_circuit_http_client())
+
     yield
-    await close_client()
-    await circuit_http_client.close()
+    logger.info("Shutting down...")
+    await asyncio.gather(close_mongo_client(), close_solr_client(), stop_solr_worker(), stop_circuit_http_client())
 
 
 description = """
@@ -69,7 +74,10 @@ logger.info("Routers Initialized")
 
 
 def main() -> None:
-    uvicorn.run("main:app_server", host=envConfig.app_ip, port=envConfig.app_port, reload=envConfig.app_reload, workers=envConfig.app_workers, reload_excludes=["logs/*", "*.log", "**/*.log"])
+    if APP_RELOAD:
+        uvicorn.run("main:app_server", host=APP_IP, port=APP_PORT, reload=APP_RELOAD, workers=APP_WORKERS, reload_excludes=["logs/*", "*.log", "**/*.log"])
+    else:
+        uvicorn.run("main:app_server", host=APP_IP, port=APP_PORT, workers=APP_WORKERS)
 
 
 if __name__ == "__main__":

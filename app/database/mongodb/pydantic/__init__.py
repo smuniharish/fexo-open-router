@@ -1,24 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 
-
-class ItemStatusEnum(str, Enum):
-    enable = "enable"
-    disable = "disable"
-
-
-class ItemCurrencyEnum(str, Enum):
-    INR = "INR"
-
-
-class ItemVegOrNonVegEnum(str, Enum):
-    true = "true"
-    false = "false"
+from app.helpers.Enums import ItemCurrencyEnum, ItemStatusEnum, ItemVegOrNonVegEnum
 
 
 class ItemVegorNonVeg(BaseModel):
@@ -37,7 +24,7 @@ class AddIndexFromMongoDb(BaseModel):
     item_id: str = Field(..., description="item id of the item")
     item_offers: Optional[List[str]] = Field([], description="item offers of the item")
     parent_item_id: Optional[str] = Field(None, description="parent item id of the item")
-    item_category_id: Optional[str] = Field(None, description="item category id of the item")
+    item_category_id: str = Field(..., description="item category id of the item")
     item_currency: ItemCurrencyEnum = Field(..., description="item currency of the item")
     item_measure_quantity: str = Field(..., description="item measure quantity of the item")
     item_measure_value: float = Field(..., description="item measure value of the item", ge=0)
@@ -49,8 +36,8 @@ class AddIndexFromMongoDb(BaseModel):
     item_status: ItemStatusEnum = Field(..., description="item status of the item")
     item_timestamp: str = Field(..., description="item timestamp of the item")
     provider_timestamp: str = Field(..., description="provider timestamp of the item")
-    item_symbol: Optional[str] = Field(None, description="item symbol of the item")
-    provider_symbol: Optional[str] = Field(None, description="item symbol of the item")
+    item_symbol: str = Field(..., description="item symbol of the item")
+    provider_symbol: str = Field(..., description="item symbol of the item")
     item_veg: Optional[ItemVegOrNonVegEnum] = Field(None, description="item veg or non-veg of the item")
     item_nonveg: Optional[ItemVegOrNonVegEnum] = Field(None, description="item veg or non-veg of the item")
     item_discount_percentage: float = Field(0, description="item discount percentage of the item", ge=0, le=100)
@@ -86,7 +73,7 @@ class AddIndexFromMongoDb(BaseModel):
         except (ValueError, TypeError) as e:
             raise ValueError(f"Invalid UUID: {value}") from e
 
-    @field_validator("bpp_uri", "item_symbol", mode="before")
+    @field_validator("bpp_uri", "item_symbol", "provider_symbol", mode="before")
     @classmethod
     def validate_url(cls, value: str) -> str:
         """Ensure the value is a valid URL and store it as a string."""

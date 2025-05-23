@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from multiprocessing import Pool
+from multiprocessing.pool import Pool
 from typing import Any
 
 from app.helpers.utilities.get_free_cpus import get_free_cpus
@@ -8,11 +8,11 @@ from app.helpers.utilities.get_free_cpus import get_free_cpus
 logger = logging.getLogger(__name__)
 
 
-def create_pool() -> Any:
+def create_pool() -> Pool:
     freecpusLength = len(get_free_cpus())
     logger.info(f"server having free cpus::{freecpusLength}")
     free_cpus = freecpusLength
-    p = Pool(free_cpus)
+    p = Pool(processes=free_cpus)
     return p
 
 
@@ -25,15 +25,6 @@ def create_process_in_pool(process_func: Any, args: Any) -> Any:
         return results
     except Exception as e:
         logger.error(f"Error in creating process in pool: {e}")
-
-
-# Function to process documents asynchronously in parallel
-async def process_in_parallel(func: Any, args: Any) -> Any:
-    # Create a list of tasks for all documents
-    tasks = [asyncio.create_task(func(doc)) for doc in args]
-    # Await all tasks concurrently
-    results = await asyncio.gather(*tasks)
-    return results
 
 
 def create_process_in_async_pool(process_func: Any, args: Any) -> Any:

@@ -10,6 +10,10 @@ from app.services.solr_db.solr_db_operations import post_search_in_solr
 
 logger = logging.getLogger(__name__)
 
+SOLR_GROCERY_SELECT_URL = envConfig.solr_base_url + envConfig.solr_grocery_core + "/select"
+SOLR_FNB_SELECT_URL = envConfig.solr_base_url + envConfig.solr_fnb_core + "/select"
+SOLR_ELECTRONICS_SELECT_URL = envConfig.solr_base_url + envConfig.solr_electronics_core + "/select"
+
 
 async def search_item_name_suggester(text_query: str, lat: float | None, lon: float | None, radius: int | None) -> Any:
     try:

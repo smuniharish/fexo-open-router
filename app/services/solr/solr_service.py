@@ -1,14 +1,17 @@
+import asyncio
 import logging
-from typing import Any
+from typing import Any, List
 
 from app.helpers.models.text_embeddings import generate_text_embeddings
-from app.helpers.pydantic.solr_index.request.RequestAddIndex import RequestAddIndexDto
+from app.helpers.TypedDicts.process_document_types import MongoValidDocsType, ProcessDocumentType, ProcessedDocumentDocType
 from app.helpers.workers.solr_worker import add_to_queue
 
 logger = logging.getLogger(__name__)
 
 
-def process_document(document: RequestAddIndexDto) -> Any:
+def process_document(individual_doc: MongoValidDocsType) -> ProcessDocumentType | None:
+    collection_type = individual_doc["collection_type"]
+    document = individual_doc["doc"]
     try:
         item_name = document.item_name
         item_short_desc = document.item_short_description
@@ -25,7 +28,7 @@ def process_document(document: RequestAddIndexDto) -> Any:
 
         provider_geo = f"{document.provider_geo_latitude},{document.provider_geo_longitude}"
 
-        doc = {
+        doc: ProcessedDocumentDocType = {
             "id": document.id,
             "code": document.code,
             "domain": document.domain,
@@ -78,23 +81,25 @@ def process_document(document: RequestAddIndexDto) -> Any:
             "provider_service_location_distance": document.provider_service_location_distance,
             "provider_service_type": document.provider_service_type,
         }
-        return doc
+        finalDoc: ProcessDocumentType = {"collection_type": collection_type, "doc": doc}
+        return finalDoc
     except Exception as e:
         logger.error(e)
         return None
 
 
-async def add_to_index(document: RequestAddIndexDto) -> Any:
-    doc = process_document(document)
-    if doc:
-        logger.info(doc["id"])
-        result = await add_to_queue(doc)
+async def add_to_index(document: MongoValidDocsType) -> Any:
+    final_doc = process_document(document)
+    if final_doc:
+        logger.info(final_doc["doc"]["id"])
+        result = await add_to_queue(final_doc)
         return result
     return None
 
 
-async def add_to_index_processed_document(docs: Any) -> Any:
-    if len(docs):
-        result = [await add_to_queue(doc) for doc in docs if doc is not None]
-        return result
-    return None
+async def add_to_index_processed_document(docs: List[ProcessDocumentType]) -> Any:
+    if not docs:
+        return None
+    tasks = [add_to_queue(doc) for doc in docs if doc is not None]
+    results = asyncio.gather(*tasks, return_exceptions=True)
+    return results

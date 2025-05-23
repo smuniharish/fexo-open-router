@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class SortingTypesEnum(Enum):
+class SortingTypesEnum(str, Enum):
     RELEVANCE = "RELEVANCE"
     DISTANCE_HIGH_TO_LOW = "DISTANCE_HIGH_TO_LOW"
     DISTANCE_LOW_TO_HIGH = "DISTANCE_LOW_TO_HIGH"

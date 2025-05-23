@@ -31,19 +31,19 @@ class EnvConfig:
         return int(os.getenv("APP_WORKERS", "1"))
 
     @property
-    def mongo_db_uri(self) -> str:
-        return os.getenv("MONGODB_URL", "")
-
-    @property
     def debug_logs_enabled(self) -> bool:
         return eval(os.getenv("DEBUG_LOGS_ENABLED", "False"))
 
     @property
-    def mongo_db_username(self) -> str | None:
+    def mongo_uri(self) -> str:
+        return os.getenv("MONGODB_URL", "127.0.0.1:27017")
+
+    @property
+    def mongo_auth_username(self) -> str | None:
         return os.getenv("MONGO_AUTH_USERNAME", None)
 
     @property
-    def mongo_db_password(self) -> str | None:
+    def mongo_auth_password(self) -> str | None:
         return os.getenv("MONGO_AUTH_PASSWORD", None)
 
     @property
@@ -55,16 +55,36 @@ class EnvConfig:
         return os.getenv("MONGO_AUTH_MECHANISM", None)
 
     @property
-    def mongo_db_name(self) -> str:
-        return os.getenv("DATABASE_NAME", "")
+    def mongo_database_name(self) -> str:
+        return os.getenv("MONGO_DATABASE_NAME", "")
 
     @property
-    def mongo_db_collection_name(self) -> str:
-        return os.getenv("COLLECTION_NAME", "")
+    def mongo_collection_grocery(self) -> str:
+        return os.getenv("MONGO_COLLECTION_GROCERY", "")
+
+    @property
+    def mongo_collection_fnb(self) -> str:
+        return os.getenv("MONGO_COLLECTION_FNB", "")
+
+    @property
+    def mongo_collection_electronics(self) -> str:
+        return os.getenv("MONGO_COLLECTION_ELECTRONICS", "")
 
     @property
     def solr_base_url(self) -> str:
-        return os.getenv("SOLR_URL", "")
+        return os.getenv("SOLR_BASE_URL", "")
+
+    @property
+    def solr_grocery_core(self) -> str:
+        return os.getenv("SOLR_GROCERY_CORE", "")
+
+    @property
+    def solr_fnb_core(self) -> str:
+        return os.getenv("SOLR_FNB_CORE", "")
+
+    @property
+    def solr_electronics_core(self) -> str:
+        return os.getenv("SOLR_ELECTRONICS_CORE", "")
 
     @property
     def solr_max_connections(self) -> int:

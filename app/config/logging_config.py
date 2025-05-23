@@ -7,6 +7,18 @@ from app.helpers.utilities.envVar import envConfig
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
+ENV_APP_RELOAD = envConfig.app_reload
+ENV_DEBUG_LOGS_ENABLED = envConfig.debug_logs_enabled
+
+
+def get_handler_on_env(true_list: list[str], false_list: list[str]) -> list[str]:
+    return true_list if ENV_APP_RELOAD else false_list
+
+
+def get_level_on_env(true_list: list[str] | str, false_list: list[str]) -> list[str] | str:
+    return true_list if ENV_DEBUG_LOGS_ENABLED else false_list
+
+
 # Logging configuration
 LOGGING_CONFIG = {
     "version": 1,
@@ -58,33 +70,33 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "uvicorn": {
-            "handlers": ["console"] if envConfig.app_reload else ["console", "file"],
-            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
+            "handlers": get_handler_on_env(["console"], ["console", "file"]),
+            "level": get_level_on_env("DEBUG", ["INFO"]),
             "propagate": False,
         },
         "uvicorn.error": {
-            "handlers": ["console"] if envConfig.app_reload else ["console", "file", "error_file"],
+            "handlers": get_handler_on_env(["console"], ["console", "file", "error_file"]),
             "level": "ERROR",
             "propagate": False,
         },
         "uvicorn.access": {
-            "handlers": ["console"] if envConfig.app_reload else ["console", "access_file", "error_file"],
-            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
+            "handlers": get_handler_on_env(["console"], ["console", "access_file", "error_file"]),
+            "level": get_level_on_env("DEBUG", ["INFO"]),
             "propagate": False,
         },
         "fastapi": {
-            "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
+            "handlers": get_handler_on_env(["console"], ["console", "file", "json_file"]),
+            "level": get_level_on_env("DEBUG", ["INFO"]),
             "propagate": False,
         },
         "app": {
-            "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-            "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
+            "handlers": get_handler_on_env(["console"], ["console", "file", "json_file"]),
+            "level": get_level_on_env("DEBUG", ["INFO"]),
             "propagate": False,
         },
     },
     "root": {
-        "handlers": ["console"] if envConfig.app_reload else ["console", "file", "json_file"],
-        "level": "DEBUG" if envConfig.debug_logs_enabled else ["INFO"],
+        "handlers": get_handler_on_env(["console"], ["console", "file", "json_file"]),
+        "level": get_level_on_env("DEBUG", ["INFO"]),
     },
 }

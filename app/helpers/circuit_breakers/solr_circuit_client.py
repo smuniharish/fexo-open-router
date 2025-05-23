@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 from aiobreaker import CircuitBreaker
 from httpx import Response  # Assuming you're using httpx
 
-from app.database.solr.db import get_client
+from app.database.solr.db import get_solr_client
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,9 @@ class CircuitHttpClient:
         return await self.breaker.call(self._request_with_retries, method, url, **kwargs)
 
     async def _request_with_retries(self, method: str, url: str, **kwargs: Any) -> Response:
-        client = get_client()
+        client = get_solr_client()
+        if not client:
+            raise Exception("Solr client is not initialized.")
         logger.debug(f"Starting retries for {method} {url}")
         for attempt in range(1, self.max_retries + 1):
             logger.debug(f"Attempt #{attempt} for {method} {url}")
@@ -69,3 +71,11 @@ class CircuitHttpClient:
 
 
 circuit_http_client = CircuitHttpClient()
+
+
+async def start_circuit_http_client() -> None:
+    await circuit_http_client.start()
+
+
+async def stop_circuit_http_client() -> None:
+    await circuit_http_client.close()
