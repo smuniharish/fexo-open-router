@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config.mp_config import configure_multiprocessing
 from app.config.orjsonConfig import ORJSONResponse
 from app.database.solr.db import load_solr_client, close_solr_client
 from app.helpers.circuit_breakers.solr_circuit_client import start_circuit_http_client, stop_circuit_http_client
@@ -26,6 +27,8 @@ APP_DEBUG_LOGS_ENABLED = envConfig.debug_logs_enabled
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> Any:
+    logger.info("Configuring Multiprocessing workers...")
+    configure_multiprocessing()
     logger.info("Initializing MongoDB client...")
     load_mongo_client()
     logger.info("Initializing Solr client...")
