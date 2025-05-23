@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import math
-from typing import List, Optional, cast
+from typing import List, Optional, cast, Any
 
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
@@ -55,15 +55,17 @@ async def add_to_queue(record: ProcessDocumentType) -> ProcessDocumentType:
     return record
 
 
+def sanitize_value(value: Any) -> Any:
+    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+        return None
+    elif isinstance(value, dict):
+        return {k: sanitize_value(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [sanitize_value(v) for v in value]
+    return value
+
 def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
-    """Sanitize a ProcessDocumentType record by replacing NaN or Inf floats with None."""
-
-    def sanitize_value(value: object) -> object:
-        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
-            return None
-        return value
-
-    return cast(ProcessDocumentType, {k: sanitize_value(v) for k, v in record.items()})
+    return cast(ProcessDocumentType, sanitize_value(record))
 
 
 async def flush_batch() -> None:
