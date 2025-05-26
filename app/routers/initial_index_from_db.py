@@ -33,7 +33,14 @@ async def index_documents(body: RequestInitialIndexDb) -> None:
 
 
 def run_indexing_thread(body: RequestInitialIndexDb) -> None:
-    asyncio.run(index_documents(body))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(index_documents(body))
+    except Exception as e:
+        print(f"Error during indexing: {e}")
+    finally:
+        loop.close()
 
 
 @router.post("/")
