@@ -12,7 +12,7 @@ router = APIRouter(prefix="/discovery", tags=["discovery"])
 @router.post("/provider_item_name_suggest")
 async def provider_item_name_suggest(body: SearchItemProviderNameSuggestDto) -> dict[Any, Any]:
     try:
-        response = await search_provider_item_name_suggest(body.text, body.latitude, body.longitude, body.radius_km)
+        response = await search_provider_item_name_suggest(body.search_type, body.text, body.latitude, body.longitude, body.radius_km)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -31,7 +31,7 @@ async def search_item_name_with_vt(body: SearchDto) -> Any:
         filters["item_discount_percentage_filter"] = getattr(body.filters, "item_discount_percentage_filter", None)
     final_sortby_value = body.sorted_by.value if body.sorted_by else SortingTypesEnum.RELEVANCE.value
     try:
-        response = await search_item_name_with_vectors(body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, final_sortby_value, filters)
+        response = await search_item_name_with_vectors(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, final_sortby_value, filters)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -50,7 +50,7 @@ async def search_item_name_string_with_vt(body: SearchDto) -> Any:
         filters["item_discount_percentage_filter"] = getattr(body.filters, "item_discount_percentage_filter", None)
     final_sortby_value = body.sorted_by.value if body.sorted_by else SortingTypesEnum.RELEVANCE.value
     try:
-        response = await search_item_name_string_with_vectors(body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, final_sortby_value, filters)
+        response = await search_item_name_string_with_vectors(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, final_sortby_value, filters)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -59,7 +59,7 @@ async def search_item_name_string_with_vt(body: SearchDto) -> Any:
 @router.post("/search_providers")
 async def search_providers_route(body: SearchProvidersDto) -> Any:
     try:
-        response = await search_providers(body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
+        response = await search_providers(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

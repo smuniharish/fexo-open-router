@@ -85,7 +85,7 @@ def process_document(individual_doc: MongoValidDocsType) -> ProcessDocumentType 
         finalDoc: ProcessDocumentType = {"collection_type": collection_type, "doc": doc}
         return finalDoc
     except Exception as e:
-        logger.error(e)
+        logger.error(f"process_document error: {e}, document: {document}")
         return None
 
 

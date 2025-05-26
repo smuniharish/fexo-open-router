@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import math
-from typing import List, Optional, cast, Any
+from typing import Any, List, Optional, cast
 
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
@@ -63,6 +63,7 @@ def sanitize_value(value: Any) -> Any:
     elif isinstance(value, list):
         return [sanitize_value(v) for v in value]
     return value
+
 
 def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
     return cast(ProcessDocumentType, sanitize_value(record))

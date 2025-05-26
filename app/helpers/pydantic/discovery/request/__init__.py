@@ -3,10 +3,12 @@ from typing import Any, List, Optional, Tuple
 from pydantic import BaseModel, Field, field_validator
 
 from app.helpers.Enums import SearchFiltersProviderItemStatusEnum, SortingTypesEnum
+from app.helpers.Enums.search_types_enum import SearchTypesEnum
 
 
 class SearchItemProviderNameSuggestDto(BaseModel):
     text: str = Field(..., description="Text For Suggestions")
+    search_type: SearchTypesEnum = Field(SearchTypesEnum.ALL, description="Type of search, default is ITEM_NAME")
     latitude: Optional[float] = Field(None, description="Latitude must be between -90 and 90, up to 6 decimal places")
     longitude: Optional[float] = Field(None, description="Longitude must be between -180 and 180")
     radius_km: Optional[int] = Field(None, description="Search radius in kilometers")
@@ -68,6 +70,7 @@ class SearchProviderFiltersDto(BaseModel):
 
 class SearchDto(BaseModel):
     search_text: str = Field(..., description="Search Text", min_length=3)
+    search_type: SearchTypesEnum = Field(SearchTypesEnum.ALL, description="Type of search, default is ITEM_NAME")
     latitude: float = Field(..., description="Latitude must be between -90 and 90, up to 6 decimal places")
     longitude: float = Field(..., description="Longitude must be between -180 and 180")
     radius_km: int = Field(10, description="Search radius in kilometers")
@@ -95,6 +98,7 @@ class SearchDto(BaseModel):
 
 class SearchProvidersDto(BaseModel):
     search_text: str = Field("*", description="Search Text", min_length=3)
+    search_type: SearchTypesEnum = Field(SearchTypesEnum.ALL, description="Type of search, default is ITEM_NAME")
     latitude: float = Field(..., description="Latitude must be between -90 and 90, up to 6 decimal places")
     longitude: float = Field(..., description="Longitude must be between -180 and 180")
     radius_km: int = Field(10, description="Search radius in kilometers")

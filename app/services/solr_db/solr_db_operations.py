@@ -30,7 +30,7 @@ async def send_to_solr(collection_type: CollectionTypesEnum, url: str, docs: Lis
             headers={"Content-Type": "application/json"},
         )
         response.raise_for_status()
-        return {str(collection_type.value): {"success": True, "count": len(docs),"docs":docs}}
+        return {str(collection_type.value): {"success": True, "count": len(docs), "docs": docs}}
     except httpx.HTTPStatusError as e:
         return {str(collection_type): {"success": False, "error": f"Solr indexing error: {str(e)}"}}
     except httpx.RequestError as e:

@@ -1,4 +1,5 @@
 import asyncio
+from threading import Thread
 from typing import Any, List
 
 from fastapi import APIRouter
@@ -12,8 +13,7 @@ from app.services.solr.solr_service import add_to_index, add_to_index_processed_
 router = APIRouter(prefix="/initial-index-db", tags=["initial-index-db"])
 
 
-@router.post("/")
-async def initial_process(body: RequestInitialIndexDb) -> dict[Any, Any]:
+async def index_documents(body: RequestInitialIndexDb) -> None:
     batch = body.batch
     skip = body.skip
     mul = body.mul
@@ -30,4 +30,14 @@ async def initial_process(body: RequestInitialIndexDb) -> dict[Any, Any]:
             final_docs: List[MongoValidDocsType] = [{"collection_type": collection_type, "doc": doc} for doc in valid_docs]
             await asyncio.gather(*(add_to_index(doc) for doc in final_docs))
         skip += batch
-    return {"message": "initialized"}
+
+
+def run_indexing_thread(body: RequestInitialIndexDb) -> None:
+    asyncio.run(index_documents(body))
+
+
+@router.post("/")
+def initial_process(body: RequestInitialIndexDb) -> dict[Any, Any]:
+    thread = Thread(target=run_indexing_thread, args=(body,))
+    thread.start()
+    return {"message": "initialized at background"}
