@@ -17,6 +17,7 @@ def process_document(individual_doc: MongoValidDocsType) -> ProcessDocumentType 
         item_short_desc = document.item_short_description
         item_long_desc = document.item_long_description
         provider_name = document.provider_name
+        provider_id = document.provider_id
 
         item_name_vector = generate_text_embeddings(item_name).tolist()
         item_short_desc_vector = generate_text_embeddings(item_short_desc).tolist() if item_short_desc is not None else None
@@ -69,7 +70,7 @@ def process_document(individual_doc: MongoValidDocsType) -> ProcessDocumentType 
             "provider_symbol": document.provider_symbol,
             "provider_status": document.provider_status.value if document.provider_status is not None else None,
             "provider_geo": provider_geo,
-            "provider_id": document.provider_id,
+            "provider_id": provider_id,
             "provider_location_id": document.provider_location_id,
             "provider_location_city": document.provider_location_city,
             "provider_location_area_code": document.provider_location_area_code,

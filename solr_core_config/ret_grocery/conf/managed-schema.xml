@@ -41,7 +41,7 @@
     </analyzer>
   </fieldType>
   <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false" docValues="false" multiValued="true"/>
-  <fieldType name="knn_vector" class="solr.DenseVectorField" hnswMaxConnections="10" knnAlgorithm="hnsw" vectorDimension="384" similarityFunction="cosine" hnswBeamWidth="40"/>
+  <fieldType name="knn_vector" class="solr.DenseVectorField" hnswMaxConnections="10" knnAlgorithm="hnsw" vectorDimension="768" similarityFunction="cosine" hnswBeamWidth="40"/>
   <fieldType name="location" class="solr.LatLonPointSpatialField"/>
   <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType" geo="true" maxDistErr="0.001" distErrPct="0.025" distanceUnits="kilometers"/>
   <fieldType name="lowercase" class="solr.TextField" positionIncrementGap="100">
