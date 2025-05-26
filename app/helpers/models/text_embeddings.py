@@ -4,7 +4,7 @@ from typing import Dict
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-embeddings_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+embeddings_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 embedding_cache: Dict[str, np.ndarray] = {}
 
 
