@@ -2,7 +2,7 @@ import asyncio
 from threading import Thread
 from typing import Any, List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from app.database.mongodb import get_source_documents
 from app.helpers.pydantic.initial_index_from_db.request.RequestInitialIndexDB import RequestInitialIndexDb
@@ -32,19 +32,8 @@ async def index_documents(body: RequestInitialIndexDb) -> None:
         skip += batch
 
 
-def run_indexing_thread(body: RequestInitialIndexDb) -> None:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(index_documents(body))
-    except Exception as e:
-        print(f"Error during indexing: {e}")
-    finally:
-        loop.close()
-
 
 @router.post("/")
-def initial_process(body: RequestInitialIndexDb) -> dict[Any, Any]:
-    thread = Thread(target=run_indexing_thread, args=(body,))
-    thread.start()
+def initial_process(body: RequestInitialIndexDb,background_tasks:BackgroundTasks) -> dict[Any, Any]:
+    background_tasks.add_task(index_documents,body)
     return {"message": "initialized at background"}
