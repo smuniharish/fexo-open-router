@@ -145,7 +145,7 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
     start = (page - 1) * rows_per_page
     raw_vector = generate_text_embeddings(text_query)[0]
     text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
-    vector_limit = 100
+    vector_limit = 1000
     params = {
         "defType": "edismax",
         # "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
