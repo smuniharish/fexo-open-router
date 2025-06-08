@@ -145,10 +145,12 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
     start = (page - 1) * rows_per_page
     raw_vector = generate_text_embeddings(text_query)[0]
     text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
-    vector_limit = 1000
+    vector_limit = 100
     params = {
         "defType": "edismax",
-        "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
+        # "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
+        "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',
+        "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
@@ -227,7 +229,9 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
     vector_limit = 1000
     params = {
         "defType": "edismax",
-        "q": f'item_name:"{text_query}"^10' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
+        # "q": f'item_name:"{text_query}"^10' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
+        "q": f'item_name:"{text_query}"^10',
+        "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
@@ -286,7 +290,9 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
     vector_limit = 1000
     params = {
         "defType": "edismax",
-        "q": f'provider_name:"{text_query}"^10' + f"OR {{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}^3 ",
+        # "q": f'provider_name:"{text_query}"^10' + f"OR {{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}^3 ",
+        "q": f'provider_name:"{text_query}"^10',
+        "q.knn": [f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],
         "fq": filter_query,
         "fl": f'id,item_category_id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,serviceability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),distance:geodist()',
         "sort": "geodist() asc",

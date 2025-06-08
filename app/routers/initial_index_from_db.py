@@ -1,5 +1,4 @@
 import asyncio
-from threading import Thread
 from typing import Any, List
 
 from fastapi import APIRouter, BackgroundTasks
@@ -32,8 +31,7 @@ async def index_documents(body: RequestInitialIndexDb) -> None:
         skip += batch
 
 
-
 @router.post("/")
-def initial_process(body: RequestInitialIndexDb,background_tasks:BackgroundTasks) -> dict[Any, Any]:
-    background_tasks.add_task(index_documents,body)
+def initial_process(body: RequestInitialIndexDb, background_tasks: BackgroundTasks) -> dict[Any, Any]:
+    background_tasks.add_task(index_documents, body)
     return {"message": "initialized at background"}
