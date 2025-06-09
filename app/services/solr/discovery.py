@@ -291,8 +291,6 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
     params = {
         "defType": "edismax",
         # "q": f'provider_name:"{text_query}"^10' + f"OR {{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}^3 ",
-        "q": f'provider_name:"{text_query}"^10',
-        "q.knn": [f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],
         "fq": filter_query,
         "fl": f'id,item_category_id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,serviceability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),distance:geodist()',
         "sort": "geodist() asc",
@@ -308,6 +306,11 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         # "group.ngroups": "true",
         "wt": "json",
     }
+    if text_query == "*":
+        params["q"]= f'provider_name:{text_query}',
+    else:
+        params["q"]= f'provider_name:"{text_query}"^10',
+        params["q.knn"]= [f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)
