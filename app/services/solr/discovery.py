@@ -278,7 +278,7 @@ def parse_final_providers_response(results: Any, type: SearchTypesEnum) -> Any:
     return final_response
 
 
-async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int,filters:Any) -> Any:
+async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int, filters: Any) -> Any:
     # filter_query=[]
     filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}"]
     if filters["provider_status_filter"] is not None:
@@ -314,10 +314,10 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         "wt": "json",
     }
     if text_query == "*":
-        params["q"]= f'provider_name:{text_query}',
+        params["q"] = (f"provider_name:{text_query}",)
     else:
-        params["q"]= f'provider_name:"{text_query}"^10',
-        params["q.knn"]= [f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],
+        params["q"] = (f'provider_name:"{text_query}"^10',)
+        params["q.knn"] = ([f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],)
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)

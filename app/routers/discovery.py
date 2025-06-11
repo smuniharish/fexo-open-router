@@ -68,7 +68,7 @@ async def search_providers_route(body: SearchProvidersDto) -> Any:
         # filters["item_selling_price_filter"] = getattr(body.filters, "item_selling_price_filter", None)
         # filters["item_discount_percentage_filter"] = getattr(body.filters, "item_discount_percentage_filter", None)
     try:
-        response = await search_providers(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize,filters)
+        response = await search_providers(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize, filters)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
