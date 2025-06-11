@@ -278,9 +278,16 @@ def parse_final_providers_response(results: Any, type: SearchTypesEnum) -> Any:
     return final_response
 
 
-async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int) -> Any:
+async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int,filters:Any) -> Any:
     # filter_query=[]
     filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}"]
+    if filters["provider_status_filter"] is not None:
+        filter_query.append(f"provider_status:{filters['provider_status_filter']}")
+    if filters["item_category_id_filter"] is not None:
+        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
+        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
+    if filters["provider_names_filter"] is not None:
+        filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     today: int = get_day_number()
     current_time: int = get_current_time()
 

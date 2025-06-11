@@ -58,8 +58,17 @@ async def search_item_name_string_with_vt(body: SearchDto) -> Any:
 
 @router.post("/search_providers")
 async def search_providers_route(body: SearchProvidersDto) -> Any:
+    filters = {"provider_status_filter": None, "item_category_id_filter": None, "provider_names_filter": None}
+    if body.filters is not None:
+        filters["provider_status_filter"] = getattr(body.filters.provider_status_filter, "value", None)
+        # filters["item_status_filter"] = getattr(body.filters.item_status_filter, "value", None)
+        # filters["domains_filter"] = getattr(body.filters, "domains_filter", None)
+        filters["item_category_id_filter"] = getattr(body.filters, "item_category_id_filter", None)
+        filters["provider_names_filter"] = getattr(body.filters, "provider_names_filter", None)
+        # filters["item_selling_price_filter"] = getattr(body.filters, "item_selling_price_filter", None)
+        # filters["item_discount_percentage_filter"] = getattr(body.filters, "item_discount_percentage_filter", None)
     try:
-        response = await search_providers(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize)
+        response = await search_providers(body.search_type, body.search_text, body.latitude, body.longitude, body.radius_km, body.pageNo, body.pageSize,filters)
         return {"data": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

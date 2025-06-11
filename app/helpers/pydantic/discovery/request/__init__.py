@@ -62,8 +62,8 @@ class SearchFiltersDto(BaseModel):
 
 class SearchProviderFiltersDto(BaseModel):
     provider_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Provider status filter")
-    item_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Item status filter")
-    domains_filter: Optional[List[str]] = Field(None, description="List of domains")
+    # item_status_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="Item status filter")
+    # domains_filter: Optional[List[str]] = Field(None, description="List of domains")
     item_category_id_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="List of Item Category")
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
 
@@ -104,6 +104,7 @@ class SearchProvidersDto(BaseModel):
     radius_km: int = Field(10, description="Search radius in kilometers")
     pageNo: int = Field(1, ge=1, description="Page number must be greater than or equal to 1")
     pageSize: int = Field(10, ge=1, le=100, description="Page size must be between 1 and 100")
+    filters: Optional[SearchProviderFiltersDto] = Field(None, description="Search Filters")
 
     @field_validator("latitude")
     def validate_latitude(cls, value: float) -> float:
