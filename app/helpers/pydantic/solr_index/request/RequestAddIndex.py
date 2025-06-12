@@ -6,9 +6,11 @@ from uuid import UUID
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 from app.helpers.Enums import ItemCurrencyEnum, ItemStatusEnum, ItemVegOrNonVegEnum
+from app.helpers.Enums.collection_types_enum import CollectionTypesEnum
 
 
 class RequestAddIndexDto(BaseModel):
+    collection_type: CollectionTypesEnum = Field(..., description="collection type")
     id: str = Field(..., description="id of the item")
     code: str = Field(..., description="code of the item")
     domain: str = Field(..., description="domain of the item")

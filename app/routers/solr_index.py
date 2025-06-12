@@ -64,7 +64,7 @@ async def add_index(body: RequestAddIndexDto) -> dict[Any, Any]:
         indexed=False,
         item_veg=body.item_veg,
     )
-    final_body: MongoValidDocsType = {"collection_type": CollectionTypesEnum.GROCERY, "doc": data}
+    final_body: MongoValidDocsType = {"collection_type": body.collection_type, "doc": data}
     result = await add_to_index(final_body)
     # return result
     if result:
