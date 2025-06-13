@@ -38,6 +38,7 @@ class SearchFiltersDto(BaseModel):
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
     item_selling_price_filter: Optional[Tuple[float, float]] = Field(None, description="Item selling price (min, max)")
     item_discount_percentage_filter: Optional[Tuple[float, float]] = Field(None, description="Item discount percentage (min, max)")
+    verified_filter:Optional[SearchFiltersProviderItemStatusEnum] = Field(None,description="verified status filter")
 
     @field_validator("item_selling_price_filter")
     def validate_item_selling_price_filter(cls, value: Optional[Tuple[float, float]]) -> Any:
@@ -66,6 +67,7 @@ class SearchProviderFiltersDto(BaseModel):
     # domains_filter: Optional[List[str]] = Field(None, description="List of domains")
     item_category_id_filter: Optional[SearchFiltersProviderItemStatusEnum] = Field(None, description="List of Item Category")
     provider_names_filter: Optional[List[str]] = Field(None, description="List of providers")
+    verified_filter:Optional[SearchFiltersProviderItemStatusEnum] = Field(None,description="verified status filter")
 
 
 class SearchDto(BaseModel):

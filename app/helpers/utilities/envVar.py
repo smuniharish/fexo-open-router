@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import List
 
 from dotenv import load_dotenv
 
@@ -109,6 +110,10 @@ class EnvConfig:
     @property
     def solr_batch_time(self) -> int:
         return int(os.getenv("SOLR_BATCH_TIME", 5))
+    
+    @property
+    def trusted_bpps(self) -> List[str]:
+        return os.getenv("TRUSTED_BPPS", "").split(",")
 
 
 envConfig = EnvConfig()
