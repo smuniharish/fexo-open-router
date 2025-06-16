@@ -69,7 +69,7 @@ class RequestAddIndexDto(BaseModel):
         except (ValueError, TypeError) as e:
             raise ValueError(f"Invalid UUID: {value}") from e
 
-    @field_validator("bpp_uri", "item_symbol", mode="before")
+    @field_validator("bpp_uri", "item_symbol","provider_symbol", mode="before")
     @classmethod
     def validate_url(cls, value: str) -> str:
         """Ensure the value is a valid URL and store it as a string."""
