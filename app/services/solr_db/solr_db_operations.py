@@ -84,18 +84,20 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
         result = await index_documents(batch)
 
         # Group indexed IDs by collection_type
-        collection_wise_ids: Dict[CollectionTypesEnum, List[str]] = {}
+        # collection_wise_ids: Dict[CollectionTypesEnum, List[str]] = {}
+        final_doc_ids: List[str] = []
 
-        for collection_key, collection_data in result.items():
+        for _, collection_data in result.items():
             if collection_data.get("success"):
                 docs = collection_data.get("docs", [])
                 doc_ids = [doc["id"] for doc in docs if "id" in doc]
-                if doc_ids:
-                    collection_wise_ids[CollectionTypesEnum(collection_key)] = doc_ids
+                # if doc_ids:
+                #     collection_wise_ids[CollectionTypesEnum(collection_key)] = doc_ids
+                final_doc_ids = final_doc_ids + doc_ids
 
         # Update MongoDB per collection type
-        update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
-        await asyncio.gather(*update_tasks)
+        # update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
+        await update_indexed_field(doc_ids)
 
         results.append(result)
 

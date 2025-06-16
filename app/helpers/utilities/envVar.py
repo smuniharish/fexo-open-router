@@ -72,6 +72,10 @@ class EnvConfig:
         return os.getenv("MONGO_COLLECTION_ELECTRONICS", "")
 
     @property
+    def mongo_collection_processed(self) -> str:
+        return os.getenv("MONGO_COLLECTION_PROCESSED", "")
+
+    @property
     def solr_base_url(self) -> str:
         return os.getenv("SOLR_BASE_URL", "")
 
@@ -110,7 +114,35 @@ class EnvConfig:
     @property
     def solr_batch_time(self) -> int:
         return int(os.getenv("SOLR_BATCH_TIME", 5))
-    
+
+    @property
+    def mongo_max_queue_size(self) -> int:
+        return int(os.getenv("MONGO_MAX_QUEUE_SIZE", 100000))
+
+    @property
+    def mongo_batch_size(self) -> int:
+        return int(os.getenv("MONGO_BATCH_SIZE", 100))
+
+    @property
+    def mongo_batch_time(self) -> int:
+        return int(os.getenv("MONGO_BATCH_TIME", 5))
+
+    @property
+    def mongo_solr_max_queue_size(self) -> int:
+        return int(os.getenv("MONGO_SOLR_MAX_QUEUE_SIZE", 100000))
+
+    @property
+    def mongo_solr_batch_size(self) -> int:
+        return int(os.getenv("MONGO_SOLR_BATCH_SIZE", 100))
+
+    @property
+    def mongo_solr_batch_time(self) -> int:
+        return int(os.getenv("MONGO_SOLR_BATCH_TIME", 5))
+
+    @property
+    def mongo_solr_fetch_interval(self) -> int:
+        return int(os.getenv("MONGO_SOLR_FETCH_INTERVAL", 5))
+
     @property
     def trusted_bpps(self) -> List[str]:
         return os.getenv("TRUSTED_BPPS", "").split(",")

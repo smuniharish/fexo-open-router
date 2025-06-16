@@ -1,20 +1,23 @@
-import app.logging_setup  # noqa
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import Any
-import asyncio
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.logging_setup  # noqa
 from app.config.mp_config import configure_multiprocessing
 from app.config.orjsonConfig import ORJSONResponse
-from app.database.solr.db import load_solr_client, close_solr_client
+from app.database.mongodb import close_mongo_client, load_mongo_client
+from app.database.solr.db import close_solr_client, load_solr_client
 from app.helpers.circuit_breakers.solr_circuit_client import start_circuit_http_client, stop_circuit_http_client
 from app.helpers.utilities.envVar import envConfig
+from app.helpers.workers.mongo_solr_worker import start_mongo_solr_worker, stop_mongo_solr_worker
+from app.helpers.workers.mongo_worker import start_mongo_worker, stop_mongo_worker
 from app.helpers.workers.solr_worker import start_solr_worker, stop_solr_worker
 from app.routers import discovery, health, initial_index_from_db, solr_index
-from app.database.mongodb import load_mongo_client, close_mongo_client
 
 logger = logging.getLogger(__name__)
 
@@ -29,16 +32,25 @@ APP_DEBUG_LOGS_ENABLED = envConfig.debug_logs_enabled
 async def lifespan(application: FastAPI) -> Any:
     logger.info("Configuring Multiprocessing workers...")
     configure_multiprocessing()
+
     logger.info("Initializing MongoDB client...")
     load_mongo_client()
+
     logger.info("Initializing Solr client...")
     load_solr_client()
+
     logger.info("Starting Solr worker and retry queue...")
     await asyncio.gather(start_solr_worker(), start_circuit_http_client())
 
+    logger.info("Starting Mongo worker and retry queue...")
+    await asyncio.gather(start_mongo_worker())
+
+    logger.info("Starting Mongo Solr worker and retry queue...")
+    await asyncio.gather(start_mongo_solr_worker())
+
     yield
     logger.info("Shutting down...")
-    await asyncio.gather(close_mongo_client(), close_solr_client(), stop_solr_worker(), stop_circuit_http_client())
+    await asyncio.gather(close_mongo_client(), close_solr_client(), stop_solr_worker(), stop_circuit_http_client(), stop_mongo_worker(), stop_mongo_solr_worker())
 
 
 description = """
