@@ -127,8 +127,8 @@ async def bulk_push_to_mongo(items: List[ProcessDocumentType]) -> Any:
 
     try:
         result = await collection.bulk_write(operations, ordered=False)
-        logger.info(f"Updated {result.modified_count} documents to 'indexed: true'.")
-        return {"message": f"Updated {result.modified_count} documents to 'indexed: true'."}
+        logger.info(f"Updated {result.modified_count} documents to db")
+        return {"message": f"Updated {result.modified_count} documents to db"}
     except Exception as e:
         logger.error(f"Error updating indexed field: {e}")
         return {"error": str(e)}
