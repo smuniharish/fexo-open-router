@@ -104,7 +104,7 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
 
         # Update MongoDB per collection type
         # update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
-        await update_indexed_field(doc_ids)
+        await update_indexed_field(final_doc_ids)
 
         results.append(result)
 
