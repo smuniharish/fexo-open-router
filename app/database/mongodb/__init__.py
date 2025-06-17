@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -100,8 +101,10 @@ async def update_indexed_field(doc_ids: list) -> Any:
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[MONGO_COLLECTION_PROCESSED]
 
+    now = datetime.now(timezone.utc)
+
     filter_query = {"_id": {"$in": doc_ids}}
-    update_query = {"$set": {"indexed": True}}
+    update_query = {"$set": {"indexed": True, "updatedAt": now}}
 
     try:
         result = await collection.update_many(filter_query, update_query)
@@ -118,7 +121,9 @@ async def bulk_push_to_mongo(items: List[ProcessDocumentType]) -> Any:
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[MONGO_COLLECTION_PROCESSED]
 
-    operations = [UpdateOne(filter={"_id": item["doc"]["id"]}, update={"$set": {**item, "_id": item["doc"]["id"], "indexed": False}}, upsert=True) for item in items]
+    now = datetime.now(timezone.utc)
+
+    operations = [UpdateOne(filter={"_id": item["doc"]["id"]}, update={"$set": {**item, "_id": item["doc"]["id"], "indexed": False, "updatedAt": now}, "$setOnInsert": {"createdAt": now}}, upsert=True) for item in items]
 
     try:
         result = await collection.bulk_write(operations, ordered=False)
