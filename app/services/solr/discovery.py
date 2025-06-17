@@ -305,7 +305,7 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         "defType": "edismax",
         # "q": f'provider_name:"{text_query}"^10' + f"OR {{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}^3 ",
         "fq": filter_query,
-        "fl": f'id,domain,item_category_id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,serviceability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),distance:geodist()',
+        "fl": f'id,domain,item_category_id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,availability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),serviceability:if(lte(geodist(provider_geo),provider_service_location_distance),true,false),distance:geodist()',
         "sort": "geodist() asc",
         "sfield": "provider_geo",
         "pt": f"{lat},{lon}",

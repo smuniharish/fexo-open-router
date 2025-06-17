@@ -6,7 +6,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.database.mongodb import update_indexed_field
-from app.helpers.circuit_breakers.solr_circuit_client import circuit_http_client
+from app.database.solr.db import get_solr_client
 from app.helpers.Enums import CollectionTypesEnum
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
@@ -23,7 +23,11 @@ SOLR_CORE_URLS = {
 async def send_to_solr(collection_type: CollectionTypesEnum, url: str, docs: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Send documents to a specific Solr core asynchronously."""
     try:
-        response = await circuit_http_client.request(
+        client = get_solr_client()
+        # client = circuit_http_client
+        if not client:
+            raise Exception("Solr client is not initialized.")
+        response = await client.request(
             "POST",
             url,
             json=docs,
@@ -64,10 +68,13 @@ async def index_documents(docs: List[ProcessDocumentType]) -> Dict[str, Any]:
 
 
 async def post_search_in_solr(solr_url: str, params: dict) -> Any:
-    # client = get_client()
+    client = get_solr_client()
+    # client = circuit_http_client
     try:
         # response = await client.post(solr_url, data=params)
-        response = await circuit_http_client.request("POST", solr_url, data=params)
+        if not client:
+            raise Exception("Solr client is not initialized.")
+        response = await client.request("POST", solr_url, data=params)
         response.raise_for_status()
         return response.json()
     except Exception as e:

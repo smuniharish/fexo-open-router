@@ -33,11 +33,11 @@ async def lifespan(application: FastAPI) -> Any:
     logger.info("Configuring Multiprocessing workers...")
     configure_multiprocessing()
 
-    logger.info("Initializing MongoDB client...")
-    load_mongo_client()
-
     logger.info("Initializing Solr client...")
     load_solr_client()
+
+    logger.info("Initializing MongoDB client...")
+    load_mongo_client()
 
     logger.info("Starting Solr worker and retry queue...")
     await asyncio.gather(start_solr_worker(), start_circuit_http_client())
