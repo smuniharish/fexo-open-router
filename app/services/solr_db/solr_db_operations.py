@@ -23,12 +23,19 @@ SOLR_CORE_URLS = {
 async def send_to_solr(collection_type: CollectionTypesEnum, url: str, docs: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Send documents to a specific Solr core asynchronously."""
     try:
-        client = get_solr_client()
         # client = circuit_http_client
+        # response = await client.request(
+        #     "POST",
+        #     url,
+        #     json=docs,
+        #     headers={"Content-Type": "application/json"},
+        # )
+        # response.raise_for_status()
+        # return {str(collection_type.value): {"success": True, "count": len(docs), "docs": docs}}
+        client = get_solr_client()
         if not client:
             raise Exception("Solr client is not initialized.")
-        response = await client.request(
-            "POST",
+        response = await client.post(
             url,
             json=docs,
             headers={"Content-Type": "application/json"},
@@ -68,13 +75,15 @@ async def index_documents(docs: List[ProcessDocumentType]) -> Dict[str, Any]:
 
 
 async def post_search_in_solr(solr_url: str, params: dict) -> Any:
-    client = get_solr_client()
-    # client = circuit_http_client
     try:
-        # response = await client.post(solr_url, data=params)
+        # client = circuit_http_client
+        # response = await client.request("POST", solr_url, data=params)
+        # response.raise_for_status()
+        # return response.json()
+        client = get_solr_client()
         if not client:
             raise Exception("Solr client is not initialized.")
-        response = await client.request("POST", solr_url, data=params)
+        response = await client.post(solr_url, data=params)
         response.raise_for_status()
         return response.json()
     except Exception as e:
