@@ -501,7 +501,7 @@
   <field name="item_timestamp" type="pdate" uninvertible="true" docValues="true" indexed="true" stored="true"/>
   <field name="item_veg" type="string" uninvertible="true" default="" docValues="true" indexed="true" stored="true"/>
   <field name="parent_item_id" type="string" uninvertible="true" docValues="true" indexed="true" required="false" stored="true"/>
-  <field name="provider_days" type="pints" uninvertible="false" multiValued="true" indexed="true" required="true" stored="true"/>
+  <field name="provider_days" type="pints" uninvertible="false" multiValued="true" indexed="true" required="false" stored="true"/>
   <field name="provider_end_time_day" type="pint" uninvertible="false" indexed="true" required="true" stored="true"/>
   <field name="provider_geo" type="location" uninvertible="true" docValues="true" indexed="true" required="true" stored="true"/>
   <field name="provider_id" type="string" uninvertible="true" docValues="true" indexed="true" required="false" stored="true"/>
