@@ -17,7 +17,7 @@ from app.helpers.utilities.envVar import envConfig
 from app.helpers.workers.mongo_solr_worker import start_mongo_solr_worker, stop_mongo_solr_worker
 from app.helpers.workers.mongo_worker import start_mongo_worker, stop_mongo_worker
 from app.helpers.workers.solr_worker import start_solr_worker, stop_solr_worker
-from app.routers import discovery, health, initial_index_from_db, solr_index
+from app.routers import discovery, health, initial_index_from_db, solr_helpers, solr_index
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +83,7 @@ logger.info("Middlewares Initialized")
 logger.info("Initializing Routers...")
 app_server.include_router(health.router)
 app_server.include_router(solr_index.router)
+app_server.include_router(solr_helpers.router)
 app_server.include_router(discovery.router)
 app_server.include_router(initial_index_from_db.router)
 logger.info("Routers Initialized")

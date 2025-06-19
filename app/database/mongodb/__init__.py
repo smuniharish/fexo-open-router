@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, List, Optional
+from typing import Any, List, Mapping, Optional, Sequence
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
@@ -132,3 +132,36 @@ async def bulk_push_to_mongo(items: List[ProcessDocumentType]) -> Any:
     except Exception as e:
         logger.error(f"Error updating indexed field: {e}")
         return {"error": str(e)}
+
+
+async def get_non_indexed_documents_count() -> Any:
+    if not mongo_client:
+        raise Exception("MongoDB client is not initialized.")
+
+    db = mongo_client[MONGO_DATABASE_NAME]
+    collection = db[MONGO_COLLECTION_PROCESSED]
+
+    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"indexed": False, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
+
+    results = []
+    async for doc in collection.aggregate(pipeline):
+        results.append(doc)
+
+    return results
+
+
+async def get_indexed_documents_count() -> Any:
+    if not mongo_client:
+        raise Exception("MongoDB client is not initialized.")
+
+    db = mongo_client[MONGO_DATABASE_NAME]
+    collection = db[MONGO_COLLECTION_PROCESSED]
+
+    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"indexed": True, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
+
+    results = []
+    async for doc in collection.aggregate(pipeline):
+        print("doc", doc)
+        results.append(doc)
+
+    return results
