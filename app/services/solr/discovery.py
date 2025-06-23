@@ -144,14 +144,19 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
 
     sort_query_string = sorting_dict[sorting_value]
     start = (page - 1) * rows_per_page
-    raw_vector = generate_text_embeddings(text_query)[0]
-    text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
-    vector_limit = 1000
+    if text_query == "*":
+        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
+    else:
+        raw_vector = generate_text_embeddings(text_query)[0]
+        text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
+        vector_limit = 1000
+        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
+        params["knn.q"] = ([f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],)
     params = {
         "defType": "edismax",
         # "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
-        "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',
-        "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
+        # "q": f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',
+        # "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
@@ -226,11 +231,19 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
     raw_vector = generate_text_embeddings(text_query)[0]
     text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
     vector_limit = 1000
+    if text_query == "*":
+        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
+    else:
+        raw_vector = generate_text_embeddings(text_query)[0]
+        text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
+        vector_limit = 1000
+        params["q"] = (f'item_name:"{text_query}"^10',)
+        params["knn.q"] = ([f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],)
     params = {
         "defType": "edismax",
         # "q": f'item_name:"{text_query}"^10' + f"OR {{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}^3 " + f"OR {{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}^2 " + f"OR {{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}^1",
-        "q": f'item_name:"{text_query}"^10',
-        "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
+        # "q": f'item_name:"{text_query}"^10',
+        # "knn.q": [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
@@ -299,9 +312,6 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
     current_time: int = get_current_time()
 
     start = (page - 1) * rows_per_page
-    raw_vector = generate_text_embeddings(text_query)[0]
-    text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
-    vector_limit = 1000
     params = {
         "defType": "edismax",
         # "q": f'provider_name:"{text_query}"^10' + f"OR {{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}^3 ",
@@ -325,8 +335,11 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
     if text_query == "*":
         params["q"] = (f"provider_name:{text_query}",)
     else:
+        raw_vector = generate_text_embeddings(text_query)[0]
+        text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
+        vector_limit = 1000
         params["q"] = (f'provider_name:"{text_query}"^10',)
-        params["q.knn"] = ([f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],)
+        params["knn.q"] = ([f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],)
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)
