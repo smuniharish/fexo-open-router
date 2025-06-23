@@ -83,7 +83,21 @@ async def post_search_in_solr(solr_url: str, params: dict) -> Any:
         client = get_solr_client()
         if not client:
             raise Exception("Solr client is not initialized.")
-        response = await client.post(solr_url, data=params)
+        query_params = []
+        from urllib.parse import urlencode
+
+        for key, value in params.items():
+            if isinstance(value, list):
+                for item in value:
+                    query_params.append((key, item))
+            else:
+                query_params.append((key, value))
+
+        # Encode params to application/x-www-form-urlencoded
+        encoded_params = urlencode(query_params)
+        print("encoded_params", encoded_params)
+        response = await client.post(solr_url, content=encoded_params, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        # response = await client.post(solr_url, data=params)
         response.raise_for_status()
         return response.json()
     except Exception as e:

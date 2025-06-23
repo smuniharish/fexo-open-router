@@ -130,9 +130,12 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
     #     final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
     #     filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
     if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
-        filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
+        # filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
+        bpp_list = [f'"{bpp}"' for bpp in envConfig.trusted_bpps]
+        filter_query.append(f"bpp_id:({' OR '.join(bpp_list)})")
     if filters["item_category_id_filter"] is not None:
-        filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
+        value = f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}"
+        filter_query.append(value)
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["item_selling_price_filter"] is not None:
@@ -143,6 +146,7 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         filter_query.append(f"item_discount_percentage:[{min_percentage} TO {max_percentage}]")
 
     sort_query_string = sorting_dict[sorting_value]
+    print("sort_query_string", sort_query_string)
     start = (page - 1) * rows_per_page
     params = {
         "defType": "edismax",
@@ -152,7 +156,6 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
-        "sort": sort_query_string,
         "sfield": "provider_geo",
         "pt": f"{lat},{lon}",
         "rows": rows_per_page,
@@ -177,14 +180,17 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         # "group.ngroups": "true",
         "wt": "json",
     }
+    if sort_query_string is not None:
+        params["sort"] = sort_query_string
     if text_query == "*":
-        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
+        params["q"] = f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 '
+        # params["q"] = "*:*"
     else:
         raw_vector = generate_text_embeddings(text_query)[0]
         text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
         vector_limit = 1000
-        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
-        params["knn.q"] = ([f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],)
+        params["q"] = f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 '
+        params["knn.q"] = [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"]
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)
@@ -194,6 +200,7 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
     else:
         urls = SOLR_SELECT_URLS.values()
         results = await asyncio.gather(*[post_search_in_solr(solr_url, params) for solr_url in urls])
+        print("results", results)
         final_response = [parse_final_response_grouped(result, type) for result, type in zip(results, SOLR_SELECT_URLS.keys(), strict=False)]
         return final_response
 
@@ -214,7 +221,9 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
     if filters["item_status_filter"] is not None:
         filter_query.append(f"item_status:{filters['item_status_filter']}")
     if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
-        filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
+        # filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
+        bpp_list = [f'"{bpp}"' for bpp in envConfig.trusted_bpps]
+        filter_query.append(f"bpp_id:({' OR '.join(bpp_list)})")
     if filters["item_category_id_filter"] is not None:
         filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
     if filters["provider_names_filter"] is not None:
@@ -239,7 +248,7 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
         # f"AND {{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}",
         "fq": filter_query,
         "fl": "id,domain,bpp_id,city,item_id,item_currency,item_measure_quantity,item_measure_value,item_name,item_short_desc,item_long_desc,item_selling_price,item_mrp_price,item_discount_price,item_status,item_symbol,item_available_count,item_maximum_count,provider_name,provider_status,provider_geo,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,item_veg,distance:geodist()",
-        "sort": sort_query_string,
+        # "sort": sort_query_string,
         "sfield": "provider_geo",
         "pt": f"{lat},{lon}",
         "rows": rows_per_page,
@@ -264,6 +273,8 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
         # "group.ngroups": "true",
         "wt": "json",
     }
+    if sort_query_string is not None:
+        params["sort"] = sort_query_string
     if text_query == "*":
         params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
     else:
@@ -333,13 +344,13 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         "wt": "json",
     }
     if text_query == "*":
-        params["q"] = (f"provider_name:{text_query}",)
+        params["q"] = f"provider_name:{text_query}"
     else:
         raw_vector = generate_text_embeddings(text_query)[0]
         text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
         vector_limit = 1000
-        params["q"] = (f'provider_name:"{text_query}"^10',)
-        params["knn.q"] = ([f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"],)
+        params["q"] = f'provider_name:"{text_query}"^10'
+        params["knn.q"] = [f"{{!knn f=provider_name_vector topK={vector_limit}}}{text_query_vector}"]
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)
