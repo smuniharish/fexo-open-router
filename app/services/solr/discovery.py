@@ -126,14 +126,13 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         filter_query.append(f"provider_status:{filters['provider_status_filter']}")
     if filters["item_status_filter"] is not None:
         filter_query.append(f"item_status:{filters['item_status_filter']}")
-    if filters["domains_filter"] is not None:
-        final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
-        filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
+    # if filters["domains_filter"] is not None:
+    #     final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
+    #     filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
     if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
         filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
     if filters["item_category_id_filter"] is not None:
-        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
-        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
+        filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["item_selling_price_filter"] is not None:
@@ -171,7 +170,7 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         "f.item_discount_percentage.facet.range.end": 100,
         "f.item_discount_percentage.facet.range.gap": 10,
         "f.item_discount_percentage.facet.mincount": 1,
-        "facet.field": ["provider_status", "item_status", "domain_string", "provider_name_string"],
+        "facet.field": ["provider_status", "item_status", "provider_name_string", "item_category_id"],
         # "facet.pivot": "item_name_string,provider_name_string",
         "group": "true",
         "group.field": "item_name_string",
@@ -209,14 +208,10 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
         filter_query.append(f"provider_status:{filters['provider_status_filter']}")
     if filters["item_status_filter"] is not None:
         filter_query.append(f"item_status:{filters['item_status_filter']}")
-    if filters["domains_filter"] is not None:
-        final_domains_list = [domain.replace(":", "\\:") for domain in filters["domains_filter"]]
-        filter_query.append(f"domain_string:{' OR '.join(final_domains_list)}")
     if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
         filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
     if filters["item_category_id_filter"] is not None:
-        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
-        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
+        filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["item_selling_price_filter"] is not None:
@@ -254,7 +249,7 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
         "f.item_discount_percentage.facet.range.end": 100,
         "f.item_discount_percentage.facet.range.gap": 10,
         "f.item_discount_percentage.facet.mincount": 1,
-        "facet.field": ["provider_status", "item_status", "domain_string", "provider_name_string"],
+        "facet.field": ["provider_status", "item_status", "provider_name_string", "item_category_id"],
         # "facet.pivot": "item_name_string,provider_name_string",
         # "group": "true",
         # "group.field": "item_name_string",
@@ -282,14 +277,20 @@ def parse_final_providers_response(results: Any, type: SearchTypesEnum) -> Any:
     return final_response
 
 
+def parse_sub_categories_response(results: Any, type: SearchTypesEnum) -> Any:
+    facet_list = results.get("facet_counts", {}).get("facet_fields", {}).get("item_category_id", [])
+    categories = [{"item_category_id": facet_list[i], "count": facet_list[i + 1]} for i in range(0, len(facet_list), 2)]
+    final_response = {type.value: categories}
+    return final_response
+
+
 async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, lon: float, radius: int, page: int, rows_per_page: int, filters: Any) -> Any:
     # filter_query=[]
     filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}"]
     if filters["provider_status_filter"] is not None:
         filter_query.append(f"provider_status:{filters['provider_status_filter']}")
     if filters["item_category_id_filter"] is not None:
-        final_item_cat_list = [item_cat.replace(":", "\\:") for item_cat in filters["item_category_id_filter"]]
-        filter_query.append(f"item_category_id:{' OR '.join(final_item_cat_list)}")
+        filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
     if filters["provider_names_filter"] is not None:
         filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
     if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
@@ -317,6 +318,8 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         # "group.limit": 1,
         # "group.offset": start,
         # "group.ngroups": "true",
+        "facet": "true",
+        "facet.field": ["provider_status", "provider_name_string", "item_category_id"],
         "wt": "json",
     }
     if text_query == "*":
@@ -334,4 +337,59 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
         urls = SOLR_SELECT_URLS.values()
         results = await asyncio.gather(*[post_search_in_solr(solr_url, params) for solr_url in urls])
         final_response = [parse_final_providers_response(result, type) for result, type in zip(results, SOLR_SELECT_URLS.keys(), strict=False)]
+        return final_response
+
+
+async def search_sub_categories(type: SearchTypesEnum, lat: float, lon: float, radius: int) -> Any:
+    # filter_query=[]
+    filter_query = [f"{{!geofilt sfield=provider_geo pt={lat},{lon} d={radius}}}"]
+    # if filters["provider_status_filter"] is not None:
+    #     filter_query.append(f"provider_status:{filters['provider_status_filter']}")
+    # if filters["item_category_id_filter"] is not None:
+    #     filter_query.append(f"item_category_id:{' OR '.join([f'"{name}"' for name in filters['item_category_id_filter']])}")
+    # if filters["provider_names_filter"] is not None:
+    #     filter_query.append(f"provider_name_string:{' OR '.join([f'"{name}"' for name in filters['provider_names_filter']])}")
+    # if filters["verified_filter"] is not None and filters["verified_filter"] == "enable":
+    #     filter_query.append(f"bpp_id:{' OR '.join(envConfig.trusted_bpps)}")
+    # today: int = get_day_number()
+    # current_time: int = get_current_time()
+
+    # start = (page - 1) * rows_per_page
+    # raw_vector = generate_text_embeddings(text_query)[0]
+    # text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
+    # vector_limit = 1000
+    params = {
+        "defType": "edismax",
+        "q": "*:*",
+        "fq": filter_query,
+        # "fl": f'id,domain,item_category_id,provider_name,provider_symbol,provider_status,provider_id,provider_geo,provider_location_city,provider_location_area_code,provider_location_street,provider_location_id,provider_min_order_value,provider_start_time_day,provider_end_time_day,provider_days,provider_service_location_distance,provider_service_type,provider_symbol,availability:if(query({{!v="provider_days:{today}"}}),true,false),closed:if(and(lte(provider_start_time_day,{current_time}),gte(provider_end_time_day,{current_time})),false,true),serviceability:if(lte(geodist(provider_geo),provider_service_location_distance),true,false),distance:geodist()',
+        # "sort": "geodist() asc",
+        # "sfield": "provider_geo",
+        # "pt": f"{lat},{lon}",
+        # "rows": rows_per_page,
+        # "start": start,
+        # "group": "true",
+        # "group.field": "provider_name_string",
+        # "group.sort": "geodist() asc",
+        # "group.limit": 1,
+        # "group.offset": start,
+        # "group.ngroups": "true",
+        "facet": "true",
+        "facet.field": "item_category_id",
+        "facet.sort": "count",
+        "facet.mincount": 1,
+        "facet.limit": -1,
+        "rows": 0,
+        "wt": "json",
+    }
+    if type in SOLR_SELECT_URLS.keys():
+        solr_url = SOLR_SELECT_URLS[type]
+        results = await post_search_in_solr(solr_url, params)
+        logger.debug(f"solr results {results}")
+        final_response = [parse_sub_categories_response(results, type)]
+        return final_response
+    else:
+        urls = SOLR_SELECT_URLS.values()
+        results = await asyncio.gather(*[post_search_in_solr(solr_url, params) for solr_url in urls])
+        final_response = [parse_sub_categories_response(result, type) for result, type in zip(results, SOLR_SELECT_URLS.keys(), strict=False)]
         return final_response
