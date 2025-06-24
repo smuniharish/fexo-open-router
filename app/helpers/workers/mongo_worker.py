@@ -1,10 +1,10 @@
 import asyncio
 import logging
-import math
-from typing import Any, List, Optional, cast
+from typing import List, Optional
 
 from app.database.mongodb import bulk_push_to_mongo
-from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
+from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
+from app.helpers.TypedDicts.process_document_types import MongoValidDocsType
 from app.helpers.utilities.envVar import envConfig
 
 logger = logging.getLogger(__name__)
@@ -13,8 +13,8 @@ MONGO_MAX_QUEUE_SIZE = envConfig.mongo_max_queue_size
 MONGO_BATCH_SIZE = envConfig.mongo_batch_size
 MONGO_BATCH_TIME = envConfig.mongo_batch_time
 # Shared variables
-queue: asyncio.Queue[ProcessDocumentType] = asyncio.Queue(maxsize=MONGO_MAX_QUEUE_SIZE)
-batch: List[ProcessDocumentType] = []
+queue: asyncio.Queue[MongoValidDocsType] = asyncio.Queue(maxsize=MONGO_MAX_QUEUE_SIZE)
+batch: List[MongoValidDocsType] = []
 batch_lock = asyncio.Lock()
 shutdown_event = asyncio.Event()
 mongo_worker_task: Optional[asyncio.Task] = None
@@ -46,7 +46,7 @@ async def flush_timer() -> None:
                 await flush_batch()
 
 
-async def add_to_mongo_queue(record: ProcessDocumentType) -> ProcessDocumentType:
+async def add_to_mongo_queue(record: MongoValidDocsType) -> MongoValidDocsType:
     """Add a record to the queue, with backpressure if full."""
     while queue.full():
         logger.warning(f"Queue is full ({queue.qsize()}) - waiting to enqueue")
@@ -55,18 +55,28 @@ async def add_to_mongo_queue(record: ProcessDocumentType) -> ProcessDocumentType
     return record
 
 
-def sanitize_value(value: Any) -> Any:
-    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
-        return None
-    elif isinstance(value, dict):
-        return {k: sanitize_value(v) for k, v in value.items()}
-    elif isinstance(value, list):
-        return [sanitize_value(v) for v in value]
-    return value
+async def bulk_add_to_mongo_queue(records: List[MongoValidDocsType]) -> List[MongoValidDocsType]:
+    """Add a record to the queue, with backpressure if full."""
+    while queue.full():
+        logger.warning(f"Queue is full ({queue.qsize()}) - waiting to enqueue")
+        await asyncio.sleep(2)
+    # await queue.put(record)
+    await asyncio.gather(*(queue.put(doc) for doc in records))
+    return records
 
 
-def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
-    return cast(ProcessDocumentType, sanitize_value(record))
+# def sanitize_value(value: Any) -> Any:
+#     if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+#         return None
+#     elif isinstance(value, dict):
+#         return {k: sanitize_value(v) for k, v in value.items()}
+#     elif isinstance(value, list):
+#         return [sanitize_value(v) for v in value]
+#     return value
+
+
+# def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
+#     return cast(ProcessDocumentType, sanitize_value(record))
 
 
 async def flush_batch() -> None:
@@ -75,8 +85,8 @@ async def flush_batch() -> None:
         return
     docs_to_send = batch.copy()
     try:
-        sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
-        await bulk_push_to_mongo(sanitized_batch)
+        # sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
+        await bulk_push_to_mongo(docs_to_send, MongoStatusEnum.NEW)
         logger.info(f"Flushed {len(docs_to_send)} documents to Mongo")
     except Exception as e:
         logger.exception(f"Error flushing batch to mongo: {e}")

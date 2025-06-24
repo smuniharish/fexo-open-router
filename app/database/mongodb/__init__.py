@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, List, Mapping, Optional, Sequence
+from decimal import Decimal
+from enum import Enum
+from typing import Any, Mapping, Optional, Sequence
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
@@ -8,7 +10,7 @@ from pymongo import UpdateOne
 
 from app.database.mongodb.pydantic import AddIndexFromMongoDb
 from app.helpers.Enums import CollectionTypesEnum
-from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
+from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.utilities.envVar import envConfig
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,7 @@ async def close_mongo_client() -> None:
         mongo_client = None
 
 
-async def get_source_documents(collection_type: CollectionTypesEnum, limit: int, skip: int) -> Any:
+async def get_source_documents(collection_type: CollectionTypesEnum, limit: int, skip: int, status: str) -> Any:
     if collection_type == CollectionTypesEnum.GROCERY:
         collection_name = MONGO_COLLECTION_GROCERY
     elif collection_type == CollectionTypesEnum.FNB:
@@ -62,7 +64,7 @@ async def get_source_documents(collection_type: CollectionTypesEnum, limit: int,
         raise Exception("MongoDB client is not initialized.")
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[collection_name]
-    query = {"indexed": False}
+    query = {"STATUS": status}
     valid_docs = []
     invalid_docs = []
     projection = {"_id": 0}
@@ -82,20 +84,20 @@ async def get_source_documents(collection_type: CollectionTypesEnum, limit: int,
     return valid_docs
 
 
-async def get_non_indexed_documents() -> Any:
+async def get_documents_with_status(status: str) -> Any:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[MONGO_COLLECTION_PROCESSED]
-    query = {"indexed": False}
+    query = {"STATUS": status}
     docs = []
-    projection = {"_id": 0, "indexed": 0}
+    projection = {"STATUS": 0}
     async for doc in collection.find(query, projection).limit(1000):
         docs.append(doc)
     return docs
 
 
-async def update_indexed_field(doc_ids: list) -> Any:
+async def update_status_field_with_ids(doc_ids: list, status: str, error: Optional[str] = None) -> Any:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
     db = mongo_client[MONGO_DATABASE_NAME]
@@ -104,18 +106,20 @@ async def update_indexed_field(doc_ids: list) -> Any:
     now = datetime.now(timezone.utc)
 
     filter_query = {"_id": {"$in": doc_ids}}
-    update_query = {"$set": {"indexed": True, "updatedAt": now}}
+    update_query = {"$set": {"STATUS": status, "updatedAt": now}}
+    if error:
+        update_query["$set"]["error"] = error
 
     try:
         result = await collection.update_many(filter_query, update_query)
-        logger.info(f"Updated {result.modified_count} documents to 'indexed: true'.")
-        return {"message": f"Updated {result.modified_count} documents to 'indexed: true'."}
+        logger.info(f"Updated {result.modified_count} documents to STATUS:{status}.")
+        return {"message": f"Updated {result.modified_count} documents to STATUS:{status}."}
     except Exception as e:
-        logger.error(f"Error updating indexed field: {e}")
+        logger.error(f"Error updating STATUS field: {e}")
         return {"error": str(e)}
 
 
-async def bulk_push_to_mongo(items: List[ProcessDocumentType]) -> Any:
+async def update_queued_to_new() -> Any:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
     db = mongo_client[MONGO_DATABASE_NAME]
@@ -123,45 +127,78 @@ async def bulk_push_to_mongo(items: List[ProcessDocumentType]) -> Any:
 
     now = datetime.now(timezone.utc)
 
-    operations = [UpdateOne(filter={"_id": item["doc"]["id"]}, update={"$set": {**item, "_id": item["doc"]["id"], "indexed": False, "updatedAt": now}, "$setOnInsert": {"createdAt": now}}, upsert=True) for item in items]
+    filter_query = {"STATUS": MongoStatusEnum.QUEUED}
+    update_query = {"$set": {"STATUS": MongoStatusEnum.NEW, "updatedAt": now}}
+
+    try:
+        result = await collection.update_many(filter_query, update_query)
+        logger.info(f"Updated {result.modified_count} documents to 'STATUS: {MongoStatusEnum.NEW}'.")
+        return {"message": f"Updated {result.modified_count} documents to 'STATUS: {MongoStatusEnum.NEW}'."}
+    except Exception as e:
+        logger.error(f"Error updating STATUS field: {e}")
+        return {"error": str(e)}
+
+
+async def bulk_push_to_mongo(items: list[Any], status: str) -> Any:
+    if not mongo_client:
+        raise Exception("MongoDB client is not initialized.")
+
+    db = mongo_client[MONGO_DATABASE_NAME]
+    collection = db[MONGO_COLLECTION_PROCESSED]
+    now = datetime.now(timezone.utc)
+
+    def clean_for_mongo(data: dict) -> dict:
+        def convert(value: Any) -> Any:
+            if isinstance(value, Decimal):
+                return float(value)
+            elif isinstance(value, Enum):
+                return value.value
+            elif isinstance(value, dict):
+                return clean_for_mongo(value)
+            elif isinstance(value, list):
+                return [convert(v) for v in value]
+            return value
+
+        return {k: convert(v) for k, v in data.items()}
+
+    operations = []
+    for item in items:
+        doc_obj = item["doc"]  # This is the Pydantic model
+        doc_dict = clean_for_mongo(doc_obj.model_dump())  # Convert to plain dict (for Pydantic v2)
+        doc_id = doc_obj.id  # Safe access
+
+        # Merge fields to update in Mongo
+        update_doc = {
+            **item,  # includes 'collection_type'
+            "doc": doc_dict,  # serialize doc properly
+            "_id": doc_id,
+            "STATUS": status,
+            "updatedAt": now,
+        }
+
+        op = UpdateOne(filter={"_id": doc_id}, update={"$set": update_doc, "$setOnInsert": {"createdAt": now}}, upsert=True)
+        operations.append(op)
 
     try:
         result = await collection.bulk_write(operations, ordered=False)
         logger.info(f"Updated {result.modified_count} documents to db")
         return {"message": f"Updated {result.modified_count} documents to db"}
     except Exception as e:
-        logger.error(f"Error updating indexed field: {e}")
+        logger.error(f"Error updating STATUS field: {e}")
         return {"error": str(e)}
 
 
-async def get_non_indexed_documents_count() -> Any:
+async def get_documents_count_with_status(status: str) -> Any:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
 
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[MONGO_COLLECTION_PROCESSED]
 
-    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"indexed": False, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
+    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"STATUS": status, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
 
     results = []
     async for doc in collection.aggregate(pipeline):
-        results.append(doc)
-
-    return results
-
-
-async def get_indexed_documents_count() -> Any:
-    if not mongo_client:
-        raise Exception("MongoDB client is not initialized.")
-
-    db = mongo_client[MONGO_DATABASE_NAME]
-    collection = db[MONGO_COLLECTION_PROCESSED]
-
-    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"indexed": True, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
-
-    results = []
-    async for doc in collection.aggregate(pipeline):
-        print("doc", doc)
         results.append(doc)
 
     return results

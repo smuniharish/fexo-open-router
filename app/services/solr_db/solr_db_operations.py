@@ -5,9 +5,10 @@ from typing import Any, Dict, List, cast
 import httpx
 from fastapi import HTTPException
 
-from app.database.mongodb import update_indexed_field
+from app.database.mongodb import update_status_field_with_ids
 from app.database.solr.db import get_solr_client
 from app.helpers.Enums import CollectionTypesEnum
+from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
 
@@ -127,7 +128,7 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
 
         # Update MongoDB per collection type
         # update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
-        await update_indexed_field(final_doc_ids)
+        await update_status_field_with_ids(final_doc_ids, MongoStatusEnum.INDEXED)
 
         results.append(result)
 

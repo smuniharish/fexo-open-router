@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -85,9 +85,9 @@ class RequestAddIndexDto(BaseModel):
     def validate_timestamp(cls, value: str) -> str:
         """Ensure the value is a valid datetime and store it as an ISO 8601 string."""
         if isinstance(value, datetime):
-            return value.isoformat()  # Convert datetime object to string
+            return value.isoformat().replace("+00:00", "Z")  # Convert datetime object to string
         try:
-            return datetime.fromisoformat(value).isoformat()  # Validate and standardize
+            return datetime.fromisoformat(value).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")  # Validate and standardize
         except ValueError as e:
             raise ValueError(f"Invalid datetime: {value}") from e
 

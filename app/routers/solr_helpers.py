@@ -1,17 +1,29 @@
-from typing import Any
+import asyncio
 
 from fastapi import APIRouter
 
-from app.database.mongodb import get_indexed_documents_count, get_non_indexed_documents_count
+from app.database.mongodb import get_documents_count_with_status
+from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 
 router = APIRouter(prefix="/solr-helpers", tags=["solr-helpers"])
 
 
-@router.get("/solr-non-indexed-count")
-async def solr_non_indexed_count() -> Any:
-    return await get_non_indexed_documents_count()
+@router.get("/solr-docs-status")
+async def solr_docs_status() -> dict[str, int]:
+    statuses = [
+        MongoStatusEnum.NEW,
+        MongoStatusEnum.QUEUED,
+        MongoStatusEnum.ERRORED,
+        MongoStatusEnum.INDEXED,
+    ]
 
+    raw_results = await asyncio.gather(*[get_documents_count_with_status(status) for status in statuses])
 
-@router.get("/solr-indexed-count")
-async def solr_indexed_count() -> Any:
-    return await get_indexed_documents_count()
+    # Extract count from result list like [{'count': 1}]
+    def extract_count(result: list[dict]) -> int:
+        if isinstance(result, list) and result and isinstance(result[0], dict) and "count" in result[0]:
+            return int(result[0]["count"])
+        return 0
+
+    results = [extract_count(res) for res in raw_results]
+    return {status.value: count for status, count in zip(statuses, results, strict=False)}

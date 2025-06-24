@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import app.logging_setup  # noqa
 from app.config.mp_config import configure_multiprocessing
 from app.config.orjsonConfig import ORJSONResponse
-from app.database.mongodb import close_mongo_client, load_mongo_client
+from app.database.mongodb import close_mongo_client, load_mongo_client, update_queued_to_new
 from app.database.solr.db import close_solr_client, load_solr_client
 from app.helpers.circuit_breakers.solr_circuit_client import start_circuit_http_client, stop_circuit_http_client
 from app.helpers.utilities.envVar import envConfig
@@ -47,6 +47,9 @@ async def lifespan(application: FastAPI) -> Any:
 
     logger.info("Starting Mongo Solr worker and retry queue...")
     await asyncio.gather(start_mongo_solr_worker())
+
+    logger.info("Mongo Status checks initialized...")
+    await update_queued_to_new()
 
     yield
     logger.info("Shutting down...")

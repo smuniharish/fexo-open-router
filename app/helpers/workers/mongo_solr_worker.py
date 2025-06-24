@@ -1,12 +1,11 @@
 import asyncio
 import logging
-import math
-from typing import Any, List, Optional, cast
+from typing import List, Optional
 
-from app.database.mongodb import get_non_indexed_documents
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
 from app.helpers.workers.solr_worker import add_to_solr_queue
+from app.services.solr.solr_service import process_new_stored_docs
 
 logger = logging.getLogger(__name__)
 
@@ -49,14 +48,14 @@ async def flush_timer() -> None:
 
 
 async def fetch_to_mongo_solr_queue() -> None:
-    logger.info("Starting periodic fetcher for non-indexed documents")
+    logger.info("Starting periodic fetcher for NEW Status documents")
 
     while not shutdown_event.is_set():
         if queue.full():
             logger.debug("Queue is full, skipping fetch cycle")
         else:
             try:
-                records = await get_non_indexed_documents()
+                records = await process_new_stored_docs()
                 remaining_capacity = queue.maxsize - queue.qsize()
                 records = records[:remaining_capacity]  # enforce queue limit
 
@@ -65,23 +64,23 @@ async def fetch_to_mongo_solr_queue() -> None:
                 logger.info(f"Fetched and queued {len(records)} records")
 
             except Exception as e:
-                logger.exception(f"Error fetching non-indexed documents: {e}")
+                logger.exception(f"Error fetching NEW STATUS documents: {e}")
 
         await asyncio.sleep(MONGO_SOLR_FETCH_INTERVAL)
 
 
-def sanitize_value(value: Any) -> Any:
-    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
-        return None
-    elif isinstance(value, dict):
-        return {k: sanitize_value(v) for k, v in value.items()}
-    elif isinstance(value, list):
-        return [sanitize_value(v) for v in value]
-    return value
+# def sanitize_value(value: Any) -> Any:
+#     if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+#         return None
+#     elif isinstance(value, dict):
+#         return {k: sanitize_value(v) for k, v in value.items()}
+#     elif isinstance(value, list):
+#         return [sanitize_value(v) for v in value]
+#     return value
 
 
-def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
-    return cast(ProcessDocumentType, sanitize_value(record))
+# def sanitize_record(record: ProcessDocumentType) -> ProcessDocumentType:
+#     return cast(ProcessDocumentType, sanitize_value(record))
 
 
 async def flush_batch() -> None:
@@ -90,8 +89,8 @@ async def flush_batch() -> None:
         return
     docs_to_send = batch.copy()
     try:
-        sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
-        await asyncio.gather(*(add_to_solr_queue(doc) for doc in sanitized_batch))
+        # sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
+        await asyncio.gather(*(add_to_solr_queue(doc) for doc in docs_to_send))
         logger.info(f"Flushed {len(docs_to_send)} documents to Mongo")
     except Exception as e:
         logger.exception(f"Error flushing batch to mongo: {e}")

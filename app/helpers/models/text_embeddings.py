@@ -17,6 +17,6 @@ def generate_text_embeddings(text: str) -> np.ndarray:
     if key in embedding_cache:
         return embedding_cache[key]
     else:
-        embeddings = embeddings_model.encode([text], convert_to_tensor=False).astype("float32")
+        embeddings = embeddings_model.encode(text, convert_to_tensor=False).astype("float32")
         embedding_cache[key] = embeddings
         return embeddings

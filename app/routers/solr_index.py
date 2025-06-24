@@ -6,7 +6,7 @@ from app.database.mongodb.pydantic import AddIndexFromMongoDb
 from app.helpers.pydantic.solr_index.request.RequestAddIndex import RequestAddIndexDto
 from app.helpers.pydantic.solr_index.response.ResponseAddIndex import ResponseAddIndexDto
 from app.helpers.TypedDicts.process_document_types import MongoValidDocsType
-from app.services.solr.solr_service import add_to_mongo
+from app.helpers.workers.mongo_worker import add_to_mongo_queue
 
 router = APIRouter(prefix="/solr-index", tags=["solr-index"])
 
@@ -60,11 +60,10 @@ async def add_index(body: RequestAddIndexDto) -> dict[Any, Any]:
         provider_days=body.provider_days,
         provider_service_location_distance=body.provider_service_location_distance,
         provider_service_type=body.provider_service_type,
-        indexed=False,
         item_veg=body.item_veg,
     )
     final_body: MongoValidDocsType = {"collection_type": body.collection_type, "doc": data}
-    result = await add_to_mongo(final_body)
+    result = await add_to_mongo_queue(final_body)
     # return result
     if result:
         return {"status": "ACK"}
