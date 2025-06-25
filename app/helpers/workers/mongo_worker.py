@@ -6,6 +6,7 @@ from app.database.mongodb import bulk_push_to_mongo
 from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.TypedDicts.process_document_types import MongoValidDocsType
 from app.helpers.utilities.envVar import envConfig
+from app.helpers.utilities.get_free_cpus import get_free_cpus
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ batch: List[MongoValidDocsType] = []
 batch_lock = asyncio.Lock()
 shutdown_event = asyncio.Event()
 mongo_worker_task: Optional[asyncio.Task] = None
+mongo_flush_semaphore = asyncio.Semaphore(get_free_cpus())
 
 
 async def mongo_worker() -> None:
@@ -86,7 +88,8 @@ async def flush_batch() -> None:
     docs_to_send = batch.copy()
     try:
         # sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
-        await bulk_push_to_mongo(docs_to_send, MongoStatusEnum.NEW)
+        async with mongo_flush_semaphore:
+            await bulk_push_to_mongo(docs_to_send, MongoStatusEnum.NEW)
         logger.info(f"Flushed {len(docs_to_send)} documents to Mongo")
     except Exception as e:
         logger.exception(f"Error flushing batch to mongo: {e}")

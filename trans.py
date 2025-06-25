@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from asyncio import Semaphore
 
-core = "ret_grocery"
+core = "ret_fnb"
 source_solr_url = f"https://retail-buyer-solr.nearshop.in/solr/{core}/select"
 target_url = "https://stagingondcfs.finfotech.co.in/ss/solr-index/"
 
@@ -13,8 +13,8 @@ MAX_CONCURRENT_REQUESTS = 100
 
 # Mapping one Solr doc to final schema
 def transform_doc(doc):
-    return {
-        "collection_type": "grocery",
+    result = {
+        "collection_type": "fnb",
         "id": doc.get("id", ""),
         "code": doc.get("code", ""),
         "domain": doc.get("domain", ""),
@@ -62,6 +62,8 @@ def transform_doc(doc):
         "provider_service_location_distance": float(doc.get("provider_service_location_distance", 0)),
         "provider_service_type": int(doc.get("provider_service_type", 10)),
     }
+    print(result)
+    return result
 
 # Fetch 1000 documents from Solr
 async def fetch_documents(start: int) -> list:
