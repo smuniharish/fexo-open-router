@@ -6,17 +6,17 @@ from asyncio import Semaphore
 
 core = "ret_grocery"
 source_solr_url = f"https://retail-buyer-solr.nearshop.in/solr/{core}/select"
-target_url = "http://127.0.0.1:6061/solr-index/"
+target_url = "https://stagingondcfs.finfotech.co.in/ss/solr-index/"
 
 BATCH_FETCH_SIZE = 1000
-MAX_CONCURRENT_REQUESTS = 50
+MAX_CONCURRENT_REQUESTS = 100
 
 # Mapping one Solr doc to final schema
 def transform_doc(doc):
     return {
         "collection_type": "grocery",
         "id": doc.get("id", ""),
-        "code": doc.get("id", ""),
+        "code": doc.get("code", ""),
         "domain": doc.get("domain", ""),
         "bpp_id": doc.get("bpp_id", ""),
         "bpp_name": doc.get("bpp_name", ""),
@@ -96,8 +96,8 @@ async def send_docs_concurrently(docs: list):
 
 # Overall transfer loop
 async def transfer_all_documents():
-    start = 213700
-    total = 213700
+    start = 0
+    total = 0
 
     while True:
         print(f"\n📥 Fetching from offset: {start}")

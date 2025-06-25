@@ -109,27 +109,52 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
     """Batch index documents to Solr in chunks."""
     batch_size = 500
     results = []
+    
+    batches = [
+        processed_documents[i:i+batch_size] for i in range(0,len(processed_documents),batch_size)
+    ]
+    
+    indexed_results = await asyncio.gather(*[index_documents(batch) for batch in batches],return_exceptions=True)
+    
+    for result in indexed_results:
+        if isinstance(result, Exception):
+            results.append({"error": str(result)})
+            continue
 
-    for i in range(0, len(processed_documents), batch_size):
-        batch = processed_documents[i : i + batch_size]
-        result = await index_documents(batch)
-
-        # Group indexed IDs by collection_type
-        # collection_wise_ids: Dict[CollectionTypesEnum, List[str]] = {}
         final_doc_ids: List[str] = []
-
         for _, collection_data in result.items():
             if collection_data.get("success"):
                 docs = collection_data.get("docs", [])
                 doc_ids = [doc["id"] for doc in docs if "id" in doc]
-                # if doc_ids:
-                #     collection_wise_ids[CollectionTypesEnum(collection_key)] = doc_ids
-                final_doc_ids = final_doc_ids + doc_ids
+                final_doc_ids.extend(doc_ids)
 
-        # Update MongoDB per collection type
-        # update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
         await update_status_field_with_ids(final_doc_ids, MongoStatusEnum.INDEXED)
-
         results.append(result)
 
     return results
+    
+    
+
+    # for i in range(0, len(processed_documents), batch_size):
+    #     batch = processed_documents[i : i + batch_size]
+    #     result = await index_documents(batch)
+
+    #     # Group indexed IDs by collection_type
+    #     # collection_wise_ids: Dict[CollectionTypesEnum, List[str]] = {}
+    #     final_doc_ids: List[str] = []
+
+    #     for _, collection_data in result.items():
+    #         if collection_data.get("success"):
+    #             docs = collection_data.get("docs", [])
+    #             doc_ids = [doc["id"] for doc in docs if "id" in doc]
+    #             # if doc_ids:
+    #             #     collection_wise_ids[CollectionTypesEnum(collection_key)] = doc_ids
+    #             final_doc_ids = final_doc_ids + doc_ids
+
+    #     # Update MongoDB per collection type
+    #     # update_tasks = [update_indexed_field(collection_type, ids) for collection_type, ids in collection_wise_ids.items()]
+    #     await update_status_field_with_ids(final_doc_ids, MongoStatusEnum.INDEXED)
+
+    #     results.append(result)
+
+    # return results

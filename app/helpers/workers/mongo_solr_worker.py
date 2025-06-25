@@ -84,16 +84,16 @@ async def fetch_to_mongo_solr_queue() -> None:
 
 
 async def flush_batch() -> None:
-    """Flush current batch to Mongo."""
+    """Flush current batch to Solr Queue."""
     if not batch:
         return
     docs_to_send = batch.copy()
     try:
         # sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
         await asyncio.gather(*(add_to_solr_queue(doc) for doc in docs_to_send))
-        logger.info(f"Flushed {len(docs_to_send)} documents to Mongo")
+        logger.info(f"Flushed {len(docs_to_send)} documents to Solr Queue")
     except Exception as e:
-        logger.exception(f"Error flushing batch to mongo: {e}")
+        logger.exception(f"Error flushing batch to solr queue: {e}")
     finally:
         batch.clear()
 
