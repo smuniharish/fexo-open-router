@@ -8,6 +8,7 @@ from app.helpers.models.text_embeddings import generate_text_embeddings
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType, ProcessedDocumentDocType
 from app.helpers.utilities.check_url_valid_head import check_url_valid_head
 from app.helpers.utilities.text import clean_text
+from app.helpers.utilities.thread_pool import thread_executor
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,11 @@ async def process_new_stored_docs() -> List[ProcessDocumentType]:
     await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
     if not records:
         return []
-    processed_documents = [process_document(document) for document in records]
+    # processed_documents = [process_document(document) for document in records]
+    loop = asyncio.get_running_loop()
+    processed_documents = await asyncio.gather(
+        *(loop.run_in_executor(thread_executor, process_document, doc) for doc in records)
+    )
     final_processed_documents = [doc for doc in processed_documents if doc is not None]
     if not final_processed_documents:
         return []
