@@ -18,6 +18,7 @@ async def solr_docs_status() -> dict[str, int]:
     ]
 
     raw_results = await asyncio.gather(*[get_documents_count_with_status(status) for status in statuses])
+    print("raw_results",raw_results)
 
     # Extract count from result list like [{'count': 1}]
     def extract_count(result: list[dict]) -> int:
