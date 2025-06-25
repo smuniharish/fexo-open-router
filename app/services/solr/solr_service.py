@@ -9,6 +9,7 @@ from app.helpers.TypedDicts.process_document_types import ProcessDocumentType, P
 from app.helpers.utilities.check_url_valid_head import check_url_valid_head
 from app.helpers.utilities.text import clean_text
 from app.helpers.utilities.thread_pool import thread_executor
+from app.helpers.utilities.get_free_cpus import cpus_count
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +120,14 @@ async def process_new_stored_docs() -> List[ProcessDocumentType]:
     fetched_ids = [record["_id"] for record in records]
     await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
 
-    # Step 1: Pre-filter using only valid item/provider symbols
-    tasks = [additional_process_document({"collection_type": doc["collection_type"], "doc": doc["doc"]}) for doc in records]
+    sem = asyncio.Semaphore(cpus_count)
+
+    async def safe_additional_process(doc):
+        async with sem:
+            return await additional_process_document({"collection_type": doc["collection_type"], "doc": doc["doc"]})
+
+    # Step 1: Validate using item_symbol / provider_symbol with concurrency control
+    tasks = [safe_additional_process(doc) for doc in records]
     results = await asyncio.gather(*tasks)
 
     valid_docs = []
@@ -137,7 +144,7 @@ async def process_new_stored_docs() -> List[ProcessDocumentType]:
     if not valid_docs:
         return []
 
-    # Step 2: Process valid docs into full structured payload
+    # Step 2: CPU-intensive embedding generation (threaded)
     loop = asyncio.get_running_loop()
     processed_documents = await asyncio.gather(
         *(loop.run_in_executor(thread_executor, process_document, doc) for doc in valid_docs)
