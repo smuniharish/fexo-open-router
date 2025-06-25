@@ -10,3 +10,4 @@ def get_free_cpus(threshold: int = 10) -> List[int]:
         return [0]
     else:
         return free_cpus
+cpus_count = len(get_free_cpus())

@@ -5,7 +5,7 @@ from typing import Any, List, Optional, cast
 
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
-from app.helpers.utilities.get_free_cpus import get_free_cpus
+from app.helpers.utilities.get_free_cpus import cpus_count
 from app.services.solr_db.solr_db_operations import batch_index_to_solr
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ batch: List[ProcessDocumentType] = []
 batch_lock = asyncio.Lock()
 shutdown_event = asyncio.Event()
 solr_worker_task: Optional[asyncio.Task] = None
-solr_flush_semaphore = asyncio.Semaphore(get_free_cpus())
+solr_flush_semaphore = asyncio.Semaphore(cpus_count)
 
 
 async def solr_worker() -> None:

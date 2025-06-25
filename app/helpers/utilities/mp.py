@@ -3,13 +3,13 @@ import logging
 from multiprocessing.pool import Pool
 from typing import Any
 
-from app.helpers.utilities.get_free_cpus import get_free_cpus
+from app.helpers.utilities.get_free_cpus import cpus_count
 
 logger = logging.getLogger(__name__)
 
 
 def create_pool() -> Pool:
-    freecpusLength = len(get_free_cpus())
+    freecpusLength = len(cpus_count)
     logger.info(f"server having free cpus::{freecpusLength}")
     free_cpus = freecpusLength
     p = Pool(processes=free_cpus)

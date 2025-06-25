@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor
 
-from app.helpers.utilities.get_free_cpus import get_free_cpus
-cpu_count = len(get_free_cpus())
-thread_executor = ThreadPoolExecutor(max_workers=cpu_count)
+from app.helpers.utilities.get_free_cpus import cpus_count
+thread_executor = ThreadPoolExecutor(max_workers=cpus_count)
