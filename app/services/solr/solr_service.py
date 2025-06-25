@@ -98,37 +98,6 @@ def process_document(individual_doc: Any) -> ProcessDocumentType | None:
         return None
 
 
-# async def add_to_index(document: MongoValidDocsType) -> Any:
-#     final_doc = process_document(document)
-#     if final_doc:
-#         logger.info(final_doc["doc"]["id"])
-#         result = await add_to_queue(final_doc)
-#         return result
-#     return None
-
-
-# async def add_to_mongo(document: MongoValidDocsType) -> Any:
-# final_doc = process_document(document)
-# if final_doc:
-#     result = await add_to_mongo_queue(final_doc)
-#     return result
-# return None
-
-
-# async def add_to_index_processed_document(docs: List[ProcessDocumentType]) -> Any:
-#     if not docs:
-#         return None
-#     tasks = [add_to_queue(doc) for doc in docs if doc is not None]
-#     results = asyncio.gather(*tasks, return_exceptions=True)
-#     return results
-# async def add_to_mongo_processed_document(docs: List[ProcessDocumentType]) -> Any:
-#     if not docs:
-#         return None
-#     tasks = [add_to_mongo_queue(doc) for doc in docs if doc is not None]
-#     results = asyncio.gather(*tasks, return_exceptions=True)
-#     return results
-
-
 async def additional_process_document(document: ProcessDocumentType) -> ProcessDocumentType | None:
     doc = document["doc"]
     item_symbol = doc.get("item_symbol")
@@ -144,27 +113,35 @@ async def additional_process_document(document: ProcessDocumentType) -> ProcessD
 async def process_new_stored_docs() -> List[ProcessDocumentType]:
     records = await get_documents_with_status(MongoStatusEnum.NEW)
     print("records", records)
-    fetched_ids = [record["_id"] for record in records]
-    await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
     if not records:
         return []
-    # processed_documents = [process_document(document) for document in records]
+
+    fetched_ids = [record["_id"] for record in records]
+    await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
+
+    # Step 1: Pre-filter using only valid item/provider symbols
+    tasks = [additional_process_document({"collection_type": doc["collection_type"], "doc": doc["doc"]}) for doc in records]
+    results = await asyncio.gather(*tasks)
+
+    valid_docs = []
+    errored_ids = []
+    for original, result in zip(records, results, strict=False):
+        if result is not None:
+            valid_docs.append(original)
+        else:
+            errored_ids.append(original["doc"]["id"])
+
+    if errored_ids:
+        await update_status_field_with_ids(errored_ids, MongoStatusEnum.ERRORED, "Invalid Item_symbol or Provider_symbol")
+
+    if not valid_docs:
+        return []
+
+    # Step 2: Process valid docs into full structured payload
     loop = asyncio.get_running_loop()
     processed_documents = await asyncio.gather(
-        *(loop.run_in_executor(thread_executor, process_document, doc) for doc in records)
+        *(loop.run_in_executor(thread_executor, process_document, doc) for doc in valid_docs)
     )
-    final_processed_documents = [doc for doc in processed_documents if doc is not None]
-    if not final_processed_documents:
-        return []
-    tasks = [additional_process_document(doc) for doc in final_processed_documents]
-    results = await asyncio.gather(*tasks)
-    final_verified_documents = []
-    errored_document_ids = []
-    for doc, result in zip(final_processed_documents, results, strict=False):
-        if result is not None:
-            final_verified_documents.append(result)
-        else:
-            errored_document_ids.append(doc["doc"]["id"])
-    if errored_document_ids:
-        await update_status_field_with_ids(errored_document_ids, MongoStatusEnum.ERRORED, "Invalid Item_symbol or Provider_symbol")
-    return final_verified_documents
+
+    final_result = [doc for doc in processed_documents if doc is not None]
+    return final_result

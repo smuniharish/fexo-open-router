@@ -4,17 +4,17 @@ import json
 from datetime import datetime
 from asyncio import Semaphore
 
-core = "ret_fnb"
+core = "ret_grocery"
 source_solr_url = f"https://retail-buyer-solr.nearshop.in/solr/{core}/select"
 target_url = "https://stagingondcfs.finfotech.co.in/ss/solr-index/"
 
-BATCH_FETCH_SIZE = 1000
+BATCH_FETCH_SIZE = 10000
 MAX_CONCURRENT_REQUESTS = 100
 
 # Mapping one Solr doc to final schema
 def transform_doc(doc):
     result = {
-        "collection_type": "fnb",
+        "collection_type": "grocery",
         "id": doc.get("id", ""),
         "code": doc.get("code", ""),
         "domain": doc.get("domain", ""),
@@ -58,11 +58,11 @@ def transform_doc(doc):
         "provider_min_order_value": float(doc.get("provider_min_order_value", 0)),
         "provider_start_time_day": int(doc.get("provider_start_time_day", 2359)),
         "provider_end_time_day": int(doc.get("provider_end_time_day", 2359)),
-        "provider_days": doc.get("provider_days", [0]),
+        "provider_days": doc.get("provider_days", []),
         "provider_service_location_distance": float(doc.get("provider_service_location_distance", 0)),
         "provider_service_type": int(doc.get("provider_service_type", 10)),
     }
-    print(result)
+    # print("result",result)
     return result
 
 # Fetch 1000 documents from Solr
@@ -79,15 +79,80 @@ async def fetch_documents(start: int) -> list:
         return response.json()["response"]["docs"]
 
 # Send single doc with concurrency control
+# Send single doc with concurrency control and retry
+failed_ids = []  # ← global list to collect all failed IDs
+final_failed_payloads = [] 
+
 async def send_single_doc(doc: dict, client: httpx.AsyncClient, sem: Semaphore):
     async with sem:
-        try:
-            payload = transform_doc(doc)
-            resp = await client.post(target_url, json=payload, timeout=30.0)
-            resp.raise_for_status()
-            print(f"✅ Sent: {payload.get('id')}")
-        except httpx.HTTPError as e:
-            print(f"❌ Failed {doc.get('id')}: {e}")
+        payload = transform_doc(doc)
+
+        for attempt in range(5):
+            try:
+                resp = await client.post(target_url, json=payload, timeout=30.0)
+                resp.raise_for_status()
+                print(f"✅ Sent: {payload.get('id')}")
+                return
+            except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                if attempt == 0:
+                    print(f"⚠️ Failed {payload.get('id')} - retrying in 30s...")
+                    await asyncio.sleep(30)
+                else:
+                    print(f"❌ Final fail {payload.get('id')}: {e}")
+                    failed_ids.append(payload.get("id"))  # ← track this
+
+async def retry_failed_documents_by_id(ids):
+    if not ids:
+        print("✅ No failed IDs to retry.")
+        return
+
+    print(f"\n🔁 Retrying {len(ids)} failed documents...")
+
+    sem = Semaphore(MAX_CONCURRENT_REQUESTS)
+    async with httpx.AsyncClient(verify=False) as client:
+        for i in range(0, len(ids), 100):  # batch Solr query in chunks
+            id_chunk = ids[i:i+100]
+            fq = " OR ".join([f"id:{json.dumps(iid)}" for iid in id_chunk])
+            params = {
+                "q": "*:*",
+                "fq": fq,
+                "rows": len(id_chunk),
+                "wt": "json"
+            }
+
+            try:
+                response = await client.get(source_solr_url, params=params)
+                response.raise_for_status()
+                docs = response.json()["response"]["docs"]
+                print(f"🔄 Retrying {len(docs)} fetched from Solr")
+
+                # Per-doc retry logic again
+                tasks = []
+                for doc in docs:
+                    payload = transform_doc(doc)
+
+                    async def retry_post(p=payload):  # closure to capture payload
+                        for attempt in range(2):
+                            try:
+                                resp = await client.post(target_url, json=p, timeout=30.0)
+                                resp.raise_for_status()
+                                print(f"✅ Retried OK: {p['id']}")
+                                return
+                            except Exception as e:
+                                if attempt == 0:
+                                    print(f"⚠️ Retry failed {p['id']} once. Waiting 30s...")
+                                    await asyncio.sleep(30)
+                                else:
+                                    print(f"❌ Retry FINAL fail {p['id']}: {e}")
+                                    final_failed_payloads.append(p)  # ← collect failed payload here
+
+                    tasks.append(retry_post())
+
+                await asyncio.gather(*tasks)
+
+            except Exception as e:
+                print(f"❌ Error fetching retry batch from Solr: {e}")
+
 
 # Process all docs in current Solr batch
 async def send_docs_concurrently(docs: list):
@@ -115,6 +180,18 @@ async def transfer_all_documents():
         start += BATCH_FETCH_SIZE
 
     print(f"\n🎉 DONE! Total documents sent: {total}")
+    # ⏱️ Wait 30 seconds before retrying failed documents
+    if failed_ids:
+        print(f"\n⏳ Waiting 30 seconds before retrying {len(failed_ids)} failed docs...")
+        await asyncio.sleep(30)
+        await retry_failed_documents_by_id(failed_ids)
+
+    # ✅ Save final failed payloads only after retry
+    if final_failed_payloads:
+        output_file = f"failed_payloads_{core}.json"
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(final_failed_payloads, f, indent=2, ensure_ascii=False)
+        print(f"\n📁 Final failed payloads written to: {output_file}")
 
 if __name__ == "__main__":
     asyncio.run(transfer_all_documents())
