@@ -8,6 +8,28 @@ from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 router = APIRouter(prefix="/solr-helpers", tags=["solr-helpers"])
 
 
+# @router.get("/solr-docs-status")
+# async def solr_docs_status() -> dict[str, int]:
+#     statuses = [
+#         MongoStatusEnum.NEW,
+#         MongoStatusEnum.QUEUED,
+#         MongoStatusEnum.ERRORED,
+#         MongoStatusEnum.INDEXED,
+#     ]
+
+#     raw_results = await asyncio.gather(*[get_documents_count_with_status(status) for status in statuses])
+#     print("raw_results",raw_results)
+
+#     # Extract count from result list like [{'count': 1}]
+#     def extract_count(result: list[dict]) -> int:
+#         if isinstance(result, list) and result and isinstance(result[0], dict) and "count" in result[0]:
+#             return int(result[0]["count"])
+#         return 0
+
+#     results = [extract_count(res) for res in raw_results]
+#     return {status.value: count for status, count in zip(statuses, results, strict=False)}
+
+
 @router.get("/solr-docs-status")
 async def solr_docs_status() -> dict[str, int]:
     statuses = [
@@ -17,14 +39,14 @@ async def solr_docs_status() -> dict[str, int]:
         MongoStatusEnum.INDEXED,
     ]
 
-    raw_results = await asyncio.gather(*[get_documents_count_with_status(status) for status in statuses])
-    print("raw_results",raw_results)
+    raw_results = await asyncio.gather(
+        *[get_documents_count_with_status(status.value) for status in statuses]
+    )
 
-    # Extract count from result list like [{'count': 1}]
+    # Sum all counts from aggregation results
     def extract_count(result: list[dict]) -> int:
-        if isinstance(result, list) and result and isinstance(result[0], dict) and "count" in result[0]:
-            return int(result[0]["count"])
-        return 0
+        return sum(doc.get("count", 0) for doc in result if isinstance(doc, dict))
 
     results = [extract_count(res) for res in raw_results]
+
     return {status.value: count for status, count in zip(statuses, results, strict=False)}
