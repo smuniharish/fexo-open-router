@@ -186,7 +186,7 @@ async def search_item_name_with_vectors(type: SearchTypesEnum, text_query: str, 
         params["q"] = f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 '
         # params["q"] = "*:*"
     else:
-        raw_vector = generate_text_embeddings(text_query)[0]
+        raw_vector = generate_text_embeddings(text_query)
         text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
         vector_limit = 1000
         params["q"] = f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 '
@@ -276,13 +276,13 @@ async def search_item_name_string_with_vectors(type: SearchTypesEnum, text_query
     if sort_query_string is not None:
         params["sort"] = sort_query_string
     if text_query == "*":
-        params["q"] = (f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 ',)
+        params["q"] = f'item_name:"{text_query}"^10 OR item_short_desc:{text_query}^2 OR item_long_desc:{text_query}^1 '
     else:
-        raw_vector = generate_text_embeddings(text_query)[0]
+        raw_vector = generate_text_embeddings(text_query)
         text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
         vector_limit = 1000
-        params["q"] = (f'item_name:"{text_query}"^10',)
-        params["knn.q"] = ([f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"],)
+        params["q"] = f'item_name:"{text_query}"^10'
+        params["knn.q"] = [f"{{!knn f=item_name_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_short_desc_vector topK={vector_limit}}}{text_query_vector}", f"{{!knn f=item_long_desc_vector topK={vector_limit}}}{text_query_vector}"]
     if type in SOLR_SELECT_URLS.keys():
         solr_url = SOLR_SELECT_URLS[type]
         results = await post_search_in_solr(solr_url, params)
@@ -346,7 +346,7 @@ async def search_providers(type: SearchTypesEnum, text_query: str, lat: float, l
     if text_query == "*":
         params["q"] = f"provider_name:{text_query}"
     else:
-        raw_vector = generate_text_embeddings(text_query)[0]
+        raw_vector = generate_text_embeddings(text_query)
         text_query_vector = "[" + ",".join(map(str, raw_vector.tolist())) + "]"
         vector_limit = 1000
         params["q"] = f'provider_name:"{text_query}"^10'
