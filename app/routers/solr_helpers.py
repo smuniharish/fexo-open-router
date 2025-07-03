@@ -7,7 +7,7 @@ import csv
 
 from typing import Any,Optional
 
-from app.database.mongodb import fetch_documents_by_status_and_time, get_documents_count_with_status
+from app.database.mongodb import fetch_documents_by_status_and_time, fetch_errored_document_ids, get_documents_count_with_status
 from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 
 router = APIRouter(prefix="/solr-helpers", tags=["solr-helpers"])
@@ -67,3 +67,8 @@ async def download_docs(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={file_name}"}
     )
+    
+@router.get("/fetch-errored-ids")
+async def fetch_errored_ids() -> Any:
+    response = await fetch_errored_document_ids()
+    return response

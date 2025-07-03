@@ -247,3 +247,24 @@ async def fetch_documents_by_status_and_time(
         docs.append(doc)
 
     return docs
+async def fetch_errored_document_ids() -> List[str]:
+    if not mongo_client:
+        raise Exception("MongoDB client is not initialized.")
+
+    db = mongo_client[MONGO_DATABASE_NAME]
+    collection = db[MONGO_COLLECTION_PROCESSED]
+
+    # Base query
+    query: Dict[str, Any] = {
+        "STATUS": MongoStatusEnum.ERRORED,
+    }
+    projection = {
+        "_id":1
+    }
+    cursor = collection.find(query,projection)
+
+    ids = []
+    async for doc in cursor:
+        ids.append(doc["_id"])
+    return ids
+
