@@ -20,7 +20,7 @@ RETRY_DELAY = 30
 
 
 def optimize_core(core_name):
-    url = f"{SOLR_BASE_URL}/{core_name}/update?optimize=true&maxSegments=1"
+    url = f"{SOLR_BASE_URL}{core_name}/update?optimize=true&maxSegments=1"
     try:
         with httpx.Client(timeout=None) as client:
             response = client.get(url)
