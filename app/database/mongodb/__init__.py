@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Mapping, Optional, Sequence,List, Dict
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
@@ -195,13 +195,7 @@ async def get_documents_count_with_status(status: str) -> Any:
     db = mongo_client[MONGO_DATABASE_NAME]
     collection = db[MONGO_COLLECTION_PROCESSED]
 
-    pipeline: Sequence[Mapping[str, Any]] = [
-        {"$match": {
-            "STATUS": status,
-            "collection_type": {"$in": ["grocery", "electronics", "fnb"]}
-        }},
-        {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}
-    ]
+    pipeline: Sequence[Mapping[str, Any]] = [{"$match": {"STATUS": status, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}}, {"$group": {"_id": "$collection_type", "count": {"$sum": 1}}}]
 
     results = []
     async for doc in collection.aggregate(pipeline):
@@ -209,11 +203,8 @@ async def get_documents_count_with_status(status: str) -> Any:
 
     return results
 
-async def fetch_documents_by_status_and_time(
-    status: str,
-    start_time: Optional[str],
-    end_time: Optional[str]
-) -> List[Dict[str, Any]]:
+
+async def fetch_documents_by_status_and_time(status: str, start_time: Optional[str], end_time: Optional[str]) -> List[Dict[str, Any]]:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
 
@@ -221,10 +212,7 @@ async def fetch_documents_by_status_and_time(
     collection = db[MONGO_COLLECTION_PROCESSED]
 
     # Base query
-    query: Dict[str, Any] = {
-        "STATUS": status,
-        "collection_type": {"$in": ["grocery", "electronics", "fnb"]}
-    }
+    query: Dict[str, Any] = {"STATUS": status, "collection_type": {"$in": ["grocery", "electronics", "fnb"]}}
 
     # Add time range filter if provided
     if start_time or end_time:
@@ -247,6 +235,8 @@ async def fetch_documents_by_status_and_time(
         docs.append(doc)
 
     return docs
+
+
 async def fetch_errored_document_ids() -> List[str]:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")
@@ -258,13 +248,10 @@ async def fetch_errored_document_ids() -> List[str]:
     query: Dict[str, Any] = {
         "STATUS": MongoStatusEnum.ERRORED,
     }
-    projection = {
-        "_id":1
-    }
-    cursor = collection.find(query,projection)
+    projection = {"_id": 1}
+    cursor = collection.find(query, projection)
 
     ids = []
     async for doc in cursor:
         ids.append(doc["_id"])
     return ids
-

@@ -109,13 +109,11 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
     """Batch index documents to Solr in chunks."""
     batch_size = 500
     results = []
-    
-    batches = [
-        processed_documents[i:i+batch_size] for i in range(0,len(processed_documents),batch_size)
-    ]
-    
-    indexed_results = await asyncio.gather(*[index_documents(batch) for batch in batches],return_exceptions=True)
-    
+
+    batches = [processed_documents[i : i + batch_size] for i in range(0, len(processed_documents), batch_size)]
+
+    indexed_results = await asyncio.gather(*[index_documents(batch) for batch in batches], return_exceptions=True)
+
     for result in indexed_results:
         if isinstance(result, Exception):
             results.append({"error": str(result)})
@@ -132,8 +130,6 @@ async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) ->
         results.append(result)
 
     return results
-    
-    
 
     # for i in range(0, len(processed_documents), batch_size):
     #     batch = processed_documents[i : i + batch_size]

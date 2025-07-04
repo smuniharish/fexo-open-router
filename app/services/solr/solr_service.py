@@ -7,9 +7,9 @@ from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.models.text_embeddings import generate_text_embeddings
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType, ProcessedDocumentDocType
 from app.helpers.utilities.check_url_valid_head import check_url_valid_head
-from app.helpers.utilities.text import clean_text
-from app.helpers.utilities.thread_pool import thread_executor
 from app.helpers.utilities.get_free_cpus import cpus_count
+from app.helpers.utilities.mp_thread_pool import run_process_thread_pool_async
+from app.helpers.utilities.text import clean_text
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,6 @@ async def additional_process_document(document: ProcessDocumentType) -> ProcessD
 
 async def process_new_stored_docs() -> List[ProcessDocumentType]:
     records = await get_documents_with_status(MongoStatusEnum.NEW)
-    print("records", records)
     if not records:
         return []
 
@@ -145,10 +144,12 @@ async def process_new_stored_docs() -> List[ProcessDocumentType]:
         return []
 
     # Step 2: CPU-intensive embedding generation (threaded)
-    loop = asyncio.get_running_loop()
-    processed_documents = await asyncio.gather(
-        *(loop.run_in_executor(thread_executor, process_document, doc) for doc in valid_docs)
-    )
+    # loop = asyncio.get_running_loop()
+    # processed_documents = await asyncio.gather(
+    #     *(loop.run_in_executor(thread_executor, process_document, doc) for doc in valid_docs)
+    # )
+
+    processed_documents = await run_process_thread_pool_async(process_document, valid_docs)
 
     final_result = [doc for doc in processed_documents if doc is not None]
     return final_result

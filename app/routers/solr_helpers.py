@@ -1,16 +1,16 @@
 import asyncio
-
-from fastapi import APIRouter,Query
-from fastapi.responses import StreamingResponse
-from io import StringIO
 import csv
+from io import StringIO
+from typing import Any, Optional
 
-from typing import Any,Optional
+from fastapi import APIRouter, Query
+from fastapi.responses import StreamingResponse
 
 from app.database.mongodb import fetch_documents_by_status_and_time, fetch_errored_document_ids, get_documents_count_with_status
 from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 
 router = APIRouter(prefix="/solr-helpers", tags=["solr-helpers"])
+
 
 @router.get("/solr-docs-status")
 async def solr_docs_status() -> dict[str, Any]:
@@ -21,28 +21,20 @@ async def solr_docs_status() -> dict[str, Any]:
         MongoStatusEnum.INDEXED,
     ]
 
-    raw_results = await asyncio.gather(
-        *[get_documents_count_with_status(status.value) for status in statuses]
-    )
+    raw_results = await asyncio.gather(*[get_documents_count_with_status(status.value) for status in statuses])
 
     def extract_count(result: list[dict]) -> int:
         return sum(doc.get("count", 0) for doc in result if isinstance(doc, dict))
 
     response = {}
     for status, docs in zip(statuses, raw_results, strict=False):
-        response[status.value] = {
-            "count": extract_count(docs),
-            "download_link": f"/download-docs?status={status.value}"
-        }
+        response[status.value] = {"count": extract_count(docs), "download_link": f"/download-docs?status={status.value}"}
 
     return response
 
+
 @router.get("/download-docs")
-async def download_docs(
-    status: str,
-    start_time: Optional[str] = Query(None, description="Start time in ISO format (e.g., 2024-01-01T00:00:00)"),
-    end_time: Optional[str] = Query(None, description="End time in ISO format (e.g., 2024-01-31T23:59:59)")
-):
+async def download_docs(status: str, start_time: Optional[str] = Query(None, description="Start time in ISO format (e.g., 2024-01-01T00:00:00)"), end_time: Optional[str] = Query(None, description="End time in ISO format (e.g., 2024-01-31T23:59:59)")):
     docs = await fetch_documents_by_status_and_time(status, start_time, end_time)
 
     if not docs:
@@ -54,20 +46,17 @@ async def download_docs(
     writer.writeheader()
     writer.writerows(docs)
     csv_buffer.seek(0)
-    file_name=f"{status}_docs.csv"
-    if(start_time):
-        file_name=f"{status}_{start_time}_docs.csv"
-    if(end_time):
-        file_name=f"{status}_{end_time}_docs.csv"
+    file_name = f"{status}_docs.csv"
+    if start_time:
+        file_name = f"{status}_{start_time}_docs.csv"
+    if end_time:
+        file_name = f"{status}_{end_time}_docs.csv"
     if start_time and end_time:
         file_name = f"{status}_{start_time}_{end_time}_docs.csv"
 
-    return StreamingResponse(
-        csv_buffer,
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={file_name}"}
-    )
-    
+    return StreamingResponse(csv_buffer, media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={file_name}"})
+
+
 @router.get("/fetch-errored-ids")
 async def fetch_errored_ids() -> Any:
     response = await fetch_errored_document_ids()

@@ -9,10 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_pool() -> Pool:
-    freecpusLength = len(cpus_count)
-    logger.info(f"server having free cpus::{freecpusLength}")
-    free_cpus = freecpusLength
-    p = Pool(processes=free_cpus)
+    p = Pool(processes=cpus_count)
     return p
 
 

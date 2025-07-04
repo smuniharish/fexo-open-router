@@ -1,10 +1,12 @@
-import httpx
-import schedule
+import logging
 import time
 from concurrent.futures import as_completed
+
+import httpx
+import schedule
+
 from app.helpers.utilities.envVar import envConfig
 from app.helpers.utilities.thread_pool import thread_executor
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ def optimize_all_cores_with_retries():
     if remaining_cores:
         logger.warning(f"Final retry failed for: {remaining_cores}")
     else:
-        logger.info(f"All cores optimized successfully!")
+        logger.info("All cores optimized successfully!")
 
 
 def run_solr_optimization_scheduler():

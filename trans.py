@@ -1,8 +1,9 @@
 import asyncio
-import httpx
 import json
-from datetime import datetime
 from asyncio import Semaphore
+from datetime import datetime
+
+import httpx
 
 core = "ret_fnb"
 source_solr_url = f"https://retail-buyer-solr.nearshop.in/solr/{core}/select"
@@ -10,6 +11,7 @@ target_url = "https://stagingondcfs.finfotech.co.in/ss/solr-index/"
 
 BATCH_FETCH_SIZE = 10000
 MAX_CONCURRENT_REQUESTS = 100
+
 
 # Mapping one Solr doc to final schema
 def transform_doc(doc):
@@ -65,23 +67,21 @@ def transform_doc(doc):
     # print("result",result)
     return result
 
+
 # Fetch 1000 documents from Solr
 async def fetch_documents(start: int) -> list:
-    params = {
-        "q": "*:*",
-        "start": start,
-        "rows": BATCH_FETCH_SIZE,
-        "wt": "json"
-    }
+    params = {"q": "*:*", "start": start, "rows": BATCH_FETCH_SIZE, "wt": "json"}
     async with httpx.AsyncClient(verify=False) as client:
         response = await client.get(source_solr_url, params=params)
         response.raise_for_status()
         return response.json()["response"]["docs"]
 
+
 # Send single doc with concurrency control
 # Send single doc with concurrency control and retry
 failed_ids = []  # ← global list to collect all failed IDs
-final_failed_payloads = [] 
+final_failed_payloads = []
+
 
 async def send_single_doc(doc: dict, client: httpx.AsyncClient, sem: Semaphore):
     async with sem:
@@ -101,6 +101,7 @@ async def send_single_doc(doc: dict, client: httpx.AsyncClient, sem: Semaphore):
                     print(f"❌ Final fail {payload.get('id')}: {e}")
                     failed_ids.append(payload.get("id"))  # ← track this
 
+
 async def retry_failed_documents_by_id(ids):
     if not ids:
         print("✅ No failed IDs to retry.")
@@ -108,17 +109,11 @@ async def retry_failed_documents_by_id(ids):
 
     print(f"\n🔁 Retrying {len(ids)} failed documents...")
 
-    sem = Semaphore(MAX_CONCURRENT_REQUESTS)
     async with httpx.AsyncClient(verify=False) as client:
         for i in range(0, len(ids), 100):  # batch Solr query in chunks
-            id_chunk = ids[i:i+100]
+            id_chunk = ids[i : i + 100]
             fq = " OR ".join([f"id:{json.dumps(iid)}" for iid in id_chunk])
-            params = {
-                "q": "*:*",
-                "fq": fq,
-                "rows": len(id_chunk),
-                "wt": "json"
-            }
+            params = {"q": "*:*", "fq": fq, "rows": len(id_chunk), "wt": "json"}
 
             try:
                 response = await client.get(source_solr_url, params=params)
@@ -161,6 +156,7 @@ async def send_docs_concurrently(docs: list):
         tasks = [send_single_doc(doc, client, sem) for doc in docs]
         await asyncio.gather(*tasks)
 
+
 # Overall transfer loop
 async def transfer_all_documents():
     start = 0
@@ -192,6 +188,7 @@ async def transfer_all_documents():
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(final_failed_payloads, f, indent=2, ensure_ascii=False)
         print(f"\n📁 Final failed payloads written to: {output_file}")
+
 
 if __name__ == "__main__":
     asyncio.run(transfer_all_documents())

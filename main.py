@@ -51,10 +51,10 @@ async def lifespan(application: FastAPI) -> Any:
 
     logger.info("Mongo Status checks initialized...")
     await update_queued_to_new()
-    
+
     logger.info("Initializing Solr Optimization Scheduler initialized...")
     run_solr_optimization_scheduler()
-    
+
     logger.info(f"Server started successfully at port {APP_PORT}")
 
     yield
