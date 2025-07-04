@@ -7,8 +7,8 @@ from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.models.text_embeddings import generate_text_embeddings
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType, ProcessedDocumentDocType
 from app.helpers.utilities.check_url_valid_head import check_url_valid_head
-from app.helpers.utilities.get_free_cpus import cpus_count
 from app.helpers.utilities.mp_thread_pool import run_process_thread_pool_async
+from app.helpers.utilities.Semaphore import cpu_semaphore
 from app.helpers.utilities.text import clean_text
 
 logger = logging.getLogger(__name__)
@@ -119,10 +119,8 @@ async def process_new_stored_docs() -> List[ProcessDocumentType]:
     fetched_ids = [record["_id"] for record in records]
     await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
 
-    sem = asyncio.Semaphore(cpus_count)
-
-    async def safe_additional_process(doc):
-        async with sem:
+    async def safe_additional_process(doc: Any) -> Any:
+        async with cpu_semaphore:
             return await additional_process_document({"collection_type": doc["collection_type"], "doc": doc["doc"]})
 
     # Step 1: Validate using item_symbol / provider_symbol with concurrency control

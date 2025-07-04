@@ -1,6 +1,7 @@
 import logging
 import time
 from concurrent.futures import as_completed
+from typing import Any
 
 import httpx
 import schedule
@@ -21,7 +22,7 @@ MAX_RETRIES = 2
 RETRY_DELAY = 30
 
 
-def optimize_core(core_name):
+def optimize_core(core_name: str) -> Any:
     url = f"{SOLR_BASE_URL}{core_name}/update?optimize=true&maxSegments=1"
     try:
         with httpx.Client(timeout=None) as client:
@@ -31,10 +32,10 @@ def optimize_core(core_name):
             else:
                 return False, f"Error {response.status_code} optimizing {core_name}"
     except Exception as e:
-        return False, f"[Exception optimizing {core_name}: {e}"
+        return False, f"Exception optimizing {core_name}: {e}"
 
 
-def optimize_all_cores_with_retries():
+def optimize_all_cores_with_retries() -> None:
     remaining_cores = list(CORES)
     attempt = 1
 
@@ -45,7 +46,7 @@ def optimize_all_cores_with_retries():
         futures = {thread_executor.submit(optimize_core, core): core for core in remaining_cores}
         for future in as_completed(futures):
             success, message = future.result()
-            print(message)
+            logger.info(message)
             if not success:
                 failed_cores.append(futures[future])
 
@@ -65,11 +66,16 @@ def optimize_all_cores_with_retries():
         logger.info("All cores optimized successfully!")
 
 
-def run_solr_optimization_scheduler():
+def _solr_scheduler_loop_blocking():
     schedule.every().day.at("00:05").do(optimize_all_cores_with_retries)
     schedule.every().day.at("12:05").do(optimize_all_cores_with_retries)
 
     logger.info("Solr Optimization Scheduler started. Will optimize Solr cores at 12 AM and 12 PM daily.")
+
     while True:
         schedule.run_pending()
-        time.sleep(30)
+        time.sleep(30)  # blocking, but it's fine in thread pool
+        
+
+def run_solr_optimization_scheduler():
+    thread_executor.submit(_solr_scheduler_loop_blocking)

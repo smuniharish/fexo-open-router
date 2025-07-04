@@ -108,7 +108,7 @@ async def post_search_in_solr(solr_url: str, params: dict) -> Any:
 async def batch_index_to_solr(processed_documents: List[ProcessDocumentType]) -> Any:
     """Batch index documents to Solr in chunks."""
     batch_size = 500
-    results = []
+    results: List[Any] = []
 
     batches = [processed_documents[i : i + batch_size] for i in range(0, len(processed_documents), batch_size)]
 

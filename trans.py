@@ -5,6 +5,8 @@ from datetime import datetime
 
 import httpx
 
+from app.helpers.utilities.Semaphore import network_semaphore
+
 core = "ret_fnb"
 source_solr_url = f"https://retail-buyer-solr.nearshop.in/solr/{core}/select"
 target_url = "https://stagingondcfs.finfotech.co.in/ss/solr-index/"
@@ -151,9 +153,8 @@ async def retry_failed_documents_by_id(ids):
 
 # Process all docs in current Solr batch
 async def send_docs_concurrently(docs: list):
-    sem = Semaphore(MAX_CONCURRENT_REQUESTS)
     async with httpx.AsyncClient(verify=False) as client:
-        tasks = [send_single_doc(doc, client, sem) for doc in docs]
+        tasks = [send_single_doc(doc, client, network_semaphore) for doc in docs]
         await asyncio.gather(*tasks)
 
 

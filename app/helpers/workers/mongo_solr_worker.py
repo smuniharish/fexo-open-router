@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
-from app.helpers.utilities.get_free_cpus import cpus_count
+from app.helpers.utilities.Semaphore import disk_semaphore
 from app.helpers.workers.solr_worker import add_to_solr_queue
 from app.services.solr.solr_service import process_new_stored_docs
 
@@ -20,7 +20,6 @@ batch: List[ProcessDocumentType] = []
 batch_lock = asyncio.Lock()
 shutdown_event = asyncio.Event()
 mongo_solr_worker_task: Optional[asyncio.Task] = None
-mongo_solr_flush_semaphore = asyncio.Semaphore(cpus_count)
 
 
 async def mongo_solr_worker() -> None:
@@ -57,7 +56,7 @@ async def fetch_to_mongo_solr_queue() -> None:
             logger.debug("Queue is full, skipping fetch cycle")
         else:
             try:
-                async with mongo_solr_flush_semaphore:
+                async with disk_semaphore:
                     records = await process_new_stored_docs()
                 # records = await process_new_stored_docs()
                 remaining_capacity = queue.maxsize - queue.qsize()
@@ -94,7 +93,7 @@ async def flush_batch() -> None:
     docs_to_send = batch.copy()
     try:
         # sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
-        async with mongo_solr_flush_semaphore:
+        async with disk_semaphore:
             await asyncio.gather(*(add_to_solr_queue(doc) for doc in docs_to_send))
         logger.info(f"Flushed {len(docs_to_send)} documents to Solr Queue")
     except Exception as e:

@@ -5,7 +5,7 @@ from typing import Any, List, Optional, cast
 
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType
 from app.helpers.utilities.envVar import envConfig
-from app.helpers.utilities.get_free_cpus import cpus_count
+from app.helpers.utilities.Semaphore import network_semaphore
 from app.services.solr_db.solr_db_operations import batch_index_to_solr
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,6 @@ batch: List[ProcessDocumentType] = []
 batch_lock = asyncio.Lock()
 shutdown_event = asyncio.Event()
 solr_worker_task: Optional[asyncio.Task] = None
-solr_flush_semaphore = asyncio.Semaphore(cpus_count)
 
 
 async def solr_worker() -> None:
@@ -78,7 +77,7 @@ async def flush_batch() -> None:
     docs_to_send = batch.copy()
     try:
         sanitized_batch = [sanitize_record(doc) for doc in docs_to_send]
-        async with solr_flush_semaphore:
+        async with network_semaphore:
             await batch_index_to_solr(sanitized_batch)
         logger.info(f"Flushed {len(docs_to_send)} documents to Solr")
     except Exception as e:

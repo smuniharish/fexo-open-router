@@ -34,7 +34,7 @@ async def solr_docs_status() -> dict[str, Any]:
 
 
 @router.get("/download-docs")
-async def download_docs(status: str, start_time: Optional[str] = Query(None, description="Start time in ISO format (e.g., 2024-01-01T00:00:00)"), end_time: Optional[str] = Query(None, description="End time in ISO format (e.g., 2024-01-31T23:59:59)")):
+async def download_docs(status: str, start_time: Optional[str] = Query(None, description="Start time in ISO format (e.g., 2024-01-01T00:00:00)"), end_time: Optional[str] = Query(None, description="End time in ISO format (e.g., 2024-01-31T23:59:59)")) -> Any:
     docs = await fetch_documents_by_status_and_time(status, start_time, end_time)
 
     if not docs:
