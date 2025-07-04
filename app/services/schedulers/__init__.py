@@ -64,8 +64,8 @@ def optimize_all_cores_with_retries():
 
 
 def run_solr_optimization_scheduler():
-    schedule.every().day.at("00:00").do(optimize_all_cores_with_retries)
-    schedule.every().day.at("12:00").do(optimize_all_cores_with_retries)
+    schedule.every().day.at("00:05").do(optimize_all_cores_with_retries)
+    schedule.every().day.at("12:05").do(optimize_all_cores_with_retries)
 
     logger.info("Solr Optimization Scheduler started. Will optimize Solr cores at 12 AM and 12 PM daily.")
     while True:
