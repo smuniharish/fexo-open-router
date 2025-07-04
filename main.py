@@ -54,7 +54,7 @@ async def lifespan(application: FastAPI) -> Any:
 
     logger.info("Initializing Solr Optimization Scheduler initialized...")
     run_solr_optimization_scheduler()
-    
+
     logger.info(f"Server started successfully at port {APP_PORT}")
 
     yield

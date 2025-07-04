@@ -66,7 +66,7 @@ def optimize_all_cores_with_retries() -> None:
         logger.info("All cores optimized successfully!")
 
 
-def _solr_scheduler_loop_blocking():
+def _solr_scheduler_loop_blocking() -> None:
     schedule.every().day.at("00:05").do(optimize_all_cores_with_retries)
     schedule.every().day.at("12:05").do(optimize_all_cores_with_retries)
 
@@ -74,8 +74,8 @@ def _solr_scheduler_loop_blocking():
 
     while True:
         schedule.run_pending()
-        time.sleep(30)  # blocking, but it's fine in thread pool
-        
+        time.sleep(30)
 
-def run_solr_optimization_scheduler():
+
+def run_solr_optimization_scheduler() -> None:
     thread_executor.submit(_solr_scheduler_loop_blocking)
