@@ -18,6 +18,7 @@ from app.helpers.workers.mongo_solr_worker import start_mongo_solr_worker, stop_
 from app.helpers.workers.mongo_worker import start_mongo_worker, stop_mongo_worker
 from app.helpers.workers.solr_worker import start_solr_worker, stop_solr_worker
 from app.routers import discovery, health, initial_index_from_db, solr_helpers, solr_index
+from app.services.schedulers import run_solr_optimization_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,11 @@ async def lifespan(application: FastAPI) -> Any:
 
     logger.info("Mongo Status checks initialized...")
     await update_queued_to_new()
+    
+    logger.info("Initializing Solr Optimization Scheduler initialized...")
+    run_solr_optimization_scheduler()
+    
+    logger.info(f"Server started successfully at port {APP_PORT}")
 
     yield
     logger.info("Shutting down...")
