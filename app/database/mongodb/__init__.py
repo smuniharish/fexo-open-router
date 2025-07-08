@@ -97,6 +97,22 @@ async def get_documents_with_status(status: str) -> Any:
     return docs
 
 
+async def fetch_new_and_update_queued() -> Any:
+    if not mongo_client:
+        raise Exception("MongoDB client is not initialized.")
+    db = mongo_client[MONGO_DATABASE_NAME]
+    collection = db[MONGO_COLLECTION_PROCESSED]
+    query = {"STATUS": MongoStatusEnum.NEW}
+    docs = []
+    projection = {"STATUS": 0}
+    fetched_ids = []
+    async for doc in collection.find(query, projection).limit(1000):
+        fetched_ids.append(doc["_id"])
+        docs.append(doc)
+    await collection.update_many({"_id": {"$in": fetched_ids}}, {"$set": {"STATUS": MongoStatusEnum.QUEUED}})
+    return docs
+
+
 async def update_status_field_with_ids(doc_ids: list, status: str, error: Optional[str] = None) -> Any:
     if not mongo_client:
         raise Exception("MongoDB client is not initialized.")

@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Any, List
 
-from app.database.mongodb import get_documents_with_status, update_status_field_with_ids
+from app.database.mongodb import fetch_new_and_update_queued, update_status_field_with_ids
 from app.helpers.Enums.mongo_status_enum import MongoStatusEnum
 from app.helpers.models.text_embeddings import generate_text_embeddings
 from app.helpers.TypedDicts.process_document_types import ProcessDocumentType, ProcessedDocumentDocType
@@ -112,12 +112,9 @@ async def additional_process_document(document: ProcessDocumentType) -> ProcessD
 
 
 async def process_new_stored_docs() -> List[ProcessDocumentType]:
-    records = await get_documents_with_status(MongoStatusEnum.NEW)
+    records = await fetch_new_and_update_queued()
     if not records:
         return []
-
-    fetched_ids = [record["_id"] for record in records]
-    await update_status_field_with_ids(fetched_ids, MongoStatusEnum.QUEUED)
 
     async def safe_additional_process(doc: Any) -> Any:
         async with cpu_semaphore:
