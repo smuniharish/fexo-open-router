@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from src.helpers.utilities.envVar import envConfig
+from src.helpers.utilities.custom.env_var import envConfig
 
 # Define the log directory
 LOG_DIR = Path("logs")

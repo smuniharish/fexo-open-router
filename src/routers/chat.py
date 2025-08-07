@@ -10,7 +10,7 @@ router = APIRouter(prefix="/v1/chat", tags=["chat"])
 
 model_router = ModelRouter()
 @router.post("/completions")
-async def chat_completions(request:Request,tenant:Tenant = Depends(validate_model_for_tenant)) -> dict[Any, Any]:
+async def chat_completions(request:Request,tenant:Tenant = Depends(validate_model_for_tenant)) -> ORJSONResponse:
     """
     Unified chat completions endpoint.
     Authenticates tenant, validates requested model,
