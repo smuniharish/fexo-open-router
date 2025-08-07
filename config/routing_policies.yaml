@@ -1,0 +1,52 @@
+global:
+  failover:
+    - openai
+    - azure_openai
+    - anthropic
+    - google
+    - xyzcloud
+    - partnerai
+
+gpt:
+  primary_providers:
+    - openai
+    - azure_openai
+  routing_criteria:
+    health_check: true
+    latency_threadhold_ms: 300
+    cost_priority: true
+    feature_support:
+      embeddings: true
+      chat: true
+  failover_order:
+    - azure_openai
+    - openai
+
+claude:
+  primary_providers:
+    - anthropic
+  routing_criteria:
+    health_check: true
+    latency_threadhold_ms: 400
+    cost_priority: true
+    feature_support:
+      embeddings: false
+      chat: true
+  failover_order:
+    - anthropic
+
+gemini:
+  primary_providers:
+    - google
+    - xyzcloud
+  routing_criteria:
+    health_check: true
+    latency_threadhold_ms: 350
+    cost_priority: false
+    feature_support:
+      embeddings: true
+      chat: true
+  failover_order:
+    - xyzcloud
+    - google
+    - partnerai

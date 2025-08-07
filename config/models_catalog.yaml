@@ -1,0 +1,87 @@
+gpt:
+  id: gpt
+  models:
+    - name: gpt-3.5-turbo
+      description: "GPT-3.5 Turbo model"
+      categories: [programming, technology]
+      providers:
+        - name: openai
+          base_url: "https://api.openai.com/v1"
+          modalities: [text, image]
+          context_length: { min: 4096, max: 16384 }
+          prompt_pricing: { text: 0.002, image: 0.015 }
+          supported_parameters: [tools, temperature, max_tokens]
+        - name: azure_openai
+          base_url: "https://azure-api.openai.com/v1"
+          modalities: [text]
+          context_length: { min: 4096, max: 8000 }
+          prompt_pricing: { text: 0.003 }
+          supported_parameters: [tools, temperature]
+    - name: gpt-4
+      description: "GPT-4 model"
+      categories: [programming, science]
+      providers:
+        - name: openai
+          base_url: "https://api.openai.com/v1"
+          modalities: [text, image,audio]
+          context_length: { min: 8192, max: 32768 }
+          prompt_pricing: { text: 0.004, image: 0.025, audio: 0.015 }
+          supported_parameters: [tools, temperature, top_p]
+claude:
+  id: claude
+  models:
+    - name: claude-v1
+      description: "Anthropic Claude v1"
+      categories: [technology]
+      providers:
+        - name: anthropic
+          base_url: "https://api.anthropic.com/v1"
+          modalities: [text]
+          context_length: { min: 8192, max: 100000 }
+          prompt_pricing: { text: 0.003 }
+          supported_parameters: [ temperature, top_k]
+    - name: claude-instant
+      description: "Anthropic Claude Instant"
+      categories: [science]
+      providers:
+        - name: anthropic
+          base_url: "https://api.anthropic.com/v1"
+          modalities: [text, image]
+          context_length: { min: 4096, max: 200000 }
+          prompt_pricing: { text: 0.002, image: 0.030 }
+          supported_parameters: [temperature, max_tokens]
+gemini:
+  id: gemini
+  categories: [science, technology]
+  models:
+    - name: gemini-pro
+      description: "Google Gemini Pro"
+      providers:
+        - name: google
+          base_url: "https://generativelanguage.googleapis.com/v1beta"
+          modalities: [text, file]
+          context_length: {min: 4096, max: 32768}
+          prompt_pricing: {text: 0.004, file: 0.020}
+          supported_parameters: [tools, temperature]
+        - name: xyzcloud
+          base_url: "https://api.xyzcloud.ai/v1"
+          modalities: [text, image]
+          context_length: {min: 4096, max: 20000}
+          prompt_pricing: {text: 0.003, image: 0.018}
+          supported_parameters: [temperature, top_p]
+    - name: gemini-lite
+      description: "Google Gemini Lite"
+      categories: [technology]
+      providers:
+        - name: google
+          base_url: "https://generativelanguage.googleapis.com/v1beta"
+          modalities: [text]
+          context_length: {min: 2048, max: 8000}
+          prompt_pricing: {text: 0.002}
+          supported_parameters: [top_p]
+        - name: partnerai
+          base_url: "https://api.partnerai.com/v1"
+          modalities: [text, file]
+          context_length: {min: 2048, max: 12000}
+          prompt_pricing: {text: 0.0018, file: 0.019}
+          supported_parameters: [temperature, max_tokens]

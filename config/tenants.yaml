@@ -1,0 +1,17 @@
+tenant_alpha:
+  id: tenant_alpha
+  name: "Acme AI Builders"
+  api_key: "xyz_api_key_for_acme"
+  allowed_models:
+    - gpt-3.5-turbo
+    - claude-instant
+  quota: 5000
+
+tenant_beta:
+  id: tenant_beta
+  name: "Beta Co"
+  api_key: "beta_apikey"
+  allowed_models:
+    - gpt-4
+    - gemini-pro
+  quota: 2000
