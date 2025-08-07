@@ -1,0 +1,79 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
+  <diagram name="Page-1" id="1ZTujN2vmb6Y3MfscD1i">
+    <mxGraphModel dx="1429" dy="938" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-25" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="570" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-1" target="e8p15TxeDcg6d8wKVnH9-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-1" target="e8p15TxeDcg6d8wKVnH9-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-1" value="Clients / Users" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-2" target="e8p15TxeDcg6d8wKVnH9-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-2" value="Middlwares&lt;div&gt;( CORS, HTTPLogging, Promethus Middleware )&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-3" target="e8p15TxeDcg6d8wKVnH9-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-3" value="Structure Logs Output&lt;div&gt;( Console, File, Prometheous)&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-6" target="e8p15TxeDcg6d8wKVnH9-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-6" target="e8p15TxeDcg6d8wKVnH9-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-6" target="e8p15TxeDcg6d8wKVnH9-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-6" target="e8p15TxeDcg6d8wKVnH9-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-6" target="e8p15TxeDcg6d8wKVnH9-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-6" value="Routing Policy Engine" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-10" target="e8p15TxeDcg6d8wKVnH9-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-10" value="Authentication Modules" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;flowAnimation=1;" edge="1" parent="1" source="e8p15TxeDcg6d8wKVnH9-11" target="e8p15TxeDcg6d8wKVnH9-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-11" value="Model Router" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-14" value="Open AI&lt;div&gt;Adaptor&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="95" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-15" value="Google Gemini&lt;div&gt;Adaptor&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="295" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-16" value="Azure Open AI&lt;div&gt;Adaptor&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="195" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-17" value="Anthropic Adaptor" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="405" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8p15TxeDcg6d8wKVnH9-18" value="PartnerAI Adaptor" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="515" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

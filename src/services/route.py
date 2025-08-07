@@ -1,7 +1,10 @@
+import logging
 from typing import Dict, Optional, List
 from fastapi import HTTPException
 from src.helpers.adapters import get_provider_adapter
 from src.helpers.utilities.custom.yaml_config import yamlConfig
+
+logger = logging.getLogger(__name__)
 
 class RoutingPolicyEngine:
     def __init__(self, routing_policies: Dict):
@@ -100,8 +103,10 @@ class ModelRouter:
         Routes the request to appropriate provider with failover.
         Raises HTTPException on failure.
         """
+        logging.info("Route request",extra={"tenant_id":tenant_id,"model_name":model_name})
         primary_provider = self.select_primary_provider(tenant_id, model_name)
         if not primary_provider:
+            logging.error("Route Request Failed",exc_info=True,extra={"tenant_id":tenant_id,model_name:"model_name","payload":payload})
             raise HTTPException(status_code=503, detail="No primary provider configured")
 
         providers_to_try = [primary_provider] + self.routing_engine.get_failover_providers(tenant_id, primary_provider)

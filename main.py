@@ -1,7 +1,6 @@
 from src.config.event_loop import configure_event_loop
 configure_event_loop()
 
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import Any
@@ -9,9 +8,11 @@ from typing import Any
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 import src.logging_setup  # noqa
 from src.config.multiprocessing import configure_multiprocessing
+from src.middleware.http_logging import HTTPLoggingMiddleware
 from src.helpers.utilities.custom.yaml_config import load_yaml_configs
 from src.config.orjson import ORJSONResponse
 from src.helpers.utilities.custom.env_var import envConfig
@@ -67,13 +68,19 @@ app_server = FastAPI(
     lifespan=lifespan,
 )
 logger.info("Initializing Middlewares...")
+app_server.add_middleware(PrometheusMiddleware)
 app_server.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app_server.add_middleware(HTTPLoggingMiddleware)
 logger.info("Middlewares Initialized")
 
 logger.info("Initializing Routers...")
 app_server.include_router(health.router)
 app_server.include_router(chat.router)
 logger.info("Routers Initialized")
+
+logger.info("Initializing Metrics Route...")
+app_server.add_route("/metrics",handle_metrics)
+logger.info("Metrics Route Initialized")
 
 
 def main() -> None:

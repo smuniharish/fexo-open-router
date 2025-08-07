@@ -2,86 +2,72 @@ gpt:
   id: gpt
   models:
     - name: gpt-3.5-turbo
-      description: "GPT-3.5 Turbo model"
+      description: "OpenAI GPT-3.5 Turbo chat model"
       categories: [programming, technology]
       providers:
         - name: openai
           base_url: "https://api.openai.com/v1"
-          modalities: [text, image]
+          modalities: [chat, text, image]
           context_length: { min: 4096, max: 16384 }
           prompt_pricing: { text: 0.002, image: 0.015 }
-          supported_parameters: [tools, temperature, max_tokens]
-        - name: azure_openai
-          base_url: "https://azure-api.openai.com/v1"
-          modalities: [text]
-          context_length: { min: 4096, max: 8000 }
-          prompt_pricing: { text: 0.003 }
-          supported_parameters: [tools, temperature]
+          supported_parameters: [temperature, max_tokens, top_p]
+
     - name: gpt-4
-      description: "GPT-4 model"
+      description: "OpenAI GPT-4 chat and multimodal model"
       categories: [programming, science]
       providers:
         - name: openai
           base_url: "https://api.openai.com/v1"
-          modalities: [text, image,audio]
+          modalities: [chat, text, image, audio]
           context_length: { min: 8192, max: 32768 }
           prompt_pricing: { text: 0.004, image: 0.025, audio: 0.015 }
-          supported_parameters: [tools, temperature, top_p]
+          supported_parameters: [temperature, max_tokens, top_p]
+
 claude:
   id: claude
   models:
-    - name: claude-v1
-      description: "Anthropic Claude v1"
-      categories: [technology]
+    - name: claude-opus-4-1-20250805
+      description: "Anthropic Claude Opus 4.1 - latest Claude model"
+      categories: [technology, research]
       providers:
         - name: anthropic
           base_url: "https://api.anthropic.com/v1"
-          modalities: [text]
-          context_length: { min: 8192, max: 100000 }
+          modalities: [chat, text]
+          context_length: { min: 8192, max: 200000 }
           prompt_pricing: { text: 0.003 }
-          supported_parameters: [ temperature, top_k]
-    - name: claude-instant
-      description: "Anthropic Claude Instant"
-      categories: [science]
+          supported_parameters: [temperature, max_tokens, top_p]
+
+    - name: claude-sonnet-4-20250514
+      description: "Anthropic Claude Sonnet 4 - balanced performance and cost"
+      categories: [technology, content]
       providers:
         - name: anthropic
           base_url: "https://api.anthropic.com/v1"
-          modalities: [text, image]
+          modalities: [chat, text, image]
           context_length: { min: 4096, max: 200000 }
-          prompt_pricing: { text: 0.002, image: 0.030 }
+          prompt_pricing: { text: 0.0025, image: 0.030 }
           supported_parameters: [temperature, max_tokens]
+
 gemini:
   id: gemini
   categories: [science, technology]
   models:
-    - name: gemini-pro
-      description: "Google Gemini Pro"
+    - name: gemini-2.0-flash
+      description: "Google Gemini 2.0 Flash - latest advanced chat model"
       providers:
         - name: google
           base_url: "https://generativelanguage.googleapis.com/v1beta"
-          modalities: [text, file]
-          context_length: {min: 4096, max: 32768}
-          prompt_pricing: {text: 0.004, file: 0.020}
-          supported_parameters: [tools, temperature]
-        - name: xyzcloud
-          base_url: "https://api.xyzcloud.ai/v1"
-          modalities: [text, image]
-          context_length: {min: 4096, max: 20000}
-          prompt_pricing: {text: 0.003, image: 0.018}
-          supported_parameters: [temperature, top_p]
-    - name: gemini-lite
-      description: "Google Gemini Lite"
-      categories: [technology]
-      providers:
-        - name: google
-          base_url: "https://generativelanguage.googleapis.com/v1beta"
-          modalities: [text]
-          context_length: {min: 2048, max: 8000}
-          prompt_pricing: {text: 0.002}
-          supported_parameters: [top_p]
-        - name: partnerai
-          base_url: "https://api.partnerai.com/v1"
-          modalities: [text, file]
-          context_length: {min: 2048, max: 12000}
-          prompt_pricing: {text: 0.0018, file: 0.019}
+          modalities: [chat, text, file]
+          context_length: { min: 4096, max: 32768 }
+          prompt_pricing: { text: 0.004, file: 0.020 }
           supported_parameters: [temperature, max_tokens]
+
+    - name: gemini-lite
+      description: "Google Gemini Lite - smaller model for chat and text"
+      providers:
+        - name: google
+          base_url: "https://generativelanguage.googleapis.com/v1beta"
+          modalities: [chat, text]
+          context_length: { min: 2048, max: 8000 }
+          prompt_pricing: { text: 0.002 }
+          supported_parameters: [temperature, top_p]

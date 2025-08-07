@@ -4,7 +4,6 @@ global:
     - azure_openai
     - anthropic
     - google
-    - xyzcloud
     - partnerai
 
 gpt:
@@ -38,7 +37,6 @@ claude:
 gemini:
   primary_providers:
     - google
-    - xyzcloud
   routing_criteria:
     health_check: true
     latency_threadhold_ms: 350
@@ -47,6 +45,5 @@ gemini:
       embeddings: true
       chat: true
   failover_order:
-    - xyzcloud
     - google
     - partnerai
