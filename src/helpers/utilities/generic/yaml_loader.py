@@ -1,17 +1,19 @@
-import yaml
 from typing import Any, Dict
 
-def load_yaml_config(file_path:str) -> Dict[str,Any]:
+import yaml
+
+
+def load_yaml_config(file_path: str) -> Dict[str, Any]:
     """
     Helper to load a YAML configuration file into a dictionary.
-    
+
     Args:
         file_path (str): Path to the YAML file.
     Returns:
         Dict[str,Any]:Parsed YAML content as a dictionary.
     """
     try:
-        with open(file_path,'r',encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             config = yaml.safe_load(file)
         return config
     except FileNotFoundError:

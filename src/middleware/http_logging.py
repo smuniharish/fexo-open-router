@@ -1,10 +1,12 @@
-import time
 import logging
+import time
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 logger = logging.getLogger(__name__)
+
 
 class HTTPLoggingMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp):
@@ -26,7 +28,7 @@ class HTTPLoggingMiddleware(BaseHTTPMiddleware):
 
         try:
             response = await call_next(request)
-        except Exception as e:
+        except Exception:
             # Log exception before propagating
             logger.error(
                 "Request processing error",

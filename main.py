@@ -1,4 +1,6 @@
 from src.config.event_loop import configure_event_loop
+from src.services.route import initializing_model_router
+
 configure_event_loop()
 
 import logging
@@ -12,11 +14,11 @@ from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 import src.logging_setup  # noqa
 from src.config.multiprocessing import configure_multiprocessing
-from src.middleware.http_logging import HTTPLoggingMiddleware
-from src.helpers.utilities.custom.yaml_config import load_yaml_configs
 from src.config.orjson import ORJSONResponse
 from src.helpers.utilities.custom.env_var import envConfig
-from src.routers import health,chat
+from src.helpers.utilities.custom.yaml_config import load_yaml_configs
+from src.middleware.http_logging import HTTPLoggingMiddleware
+from src.routers import chat, health
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +34,14 @@ async def lifespan(application: FastAPI) -> Any:
     logger.info("Configuring Multiprocessing workers...")
     configure_multiprocessing()
     logger.info("Multiprocessing workers Configured!")
-    
+
     logger.info("Loading YAML Configs...")
     load_yaml_configs()
     logger.info("YAML Configs Loaded !")
+
+    logger.info("Initializing Model Router...")
+    initializing_model_router()
+    logger.info("Model Router Initialized !")
 
     logger.info(f"Server started successfully at port {APP_PORT}")
 
@@ -79,7 +85,7 @@ app_server.include_router(chat.router)
 logger.info("Routers Initialized")
 
 logger.info("Initializing Metrics Route...")
-app_server.add_route("/metrics",handle_metrics)
+app_server.add_route("/metrics", handle_metrics)
 logger.info("Metrics Route Initialized")
 
 

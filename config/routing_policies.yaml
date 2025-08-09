@@ -1,49 +1,38 @@
+tenant_alpha:
+  gpt:
+    primary_providers:
+      - openai
+      - azure_openai
+    routing_criteria:
+      health_check: true
+      latency_threshold_ms: 300
+      cost_priority: true
+      feature_support:
+        embeddings: true
+        chat: true
+    failover_order:
+      - azure_openai
+      - openai
+
+tenant_beta:
+  gpt:
+    primary_providers:
+      - partnerai
+    routing_criteria:
+      health_check: true
+      latency_threshold_ms: 350
+      cost_priority: false
+      feature_support:
+        embeddings: true
+        chat: true
+    failover_order:
+      - partnerai
+      - openai
+
 global:
   failover:
     - openai
     - azure_openai
     - anthropic
-    - google
-    - partnerai
-
-gpt:
-  primary_providers:
-    - openai
-    - azure_openai
-  routing_criteria:
-    health_check: true
-    latency_threadhold_ms: 300
-    cost_priority: true
-    feature_support:
-      embeddings: true
-      chat: true
-  failover_order:
-    - azure_openai
-    - openai
-
-claude:
-  primary_providers:
-    - anthropic
-  routing_criteria:
-    health_check: true
-    latency_threadhold_ms: 400
-    cost_priority: true
-    feature_support:
-      embeddings: false
-      chat: true
-  failover_order:
-    - anthropic
-
-gemini:
-  primary_providers:
-    - google
-  routing_criteria:
-    health_check: true
-    latency_threadhold_ms: 350
-    cost_priority: false
-    feature_support:
-      embeddings: true
-      chat: true
-  failover_order:
     - google
     - partnerai

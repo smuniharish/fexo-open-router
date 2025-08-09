@@ -1,5 +1,7 @@
-from fastapi import Header, HTTPException, Depends, Request
 from typing import Optional
+
+from fastapi import Depends, Header, HTTPException, Request
+
 from src.helpers.models.pydantic.auth import Tenant
 from src.helpers.utilities.custom.yaml_config import yamlConfig
 
@@ -32,21 +34,17 @@ def find_tenant_by_api_key(api_key: str) -> Optional[Tenant]:
     return None
 
 
-async def authenticate_tenant(
-    authorization: str = Header(..., alias="Authorization")
-) -> Tenant:
+async def authenticate_tenant(authorization: str = Header(..., alias="Authorization")) -> Tenant:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid Authorization header format")
-    api_key = authorization[len("Bearer "):].strip()
+    api_key = authorization[len("Bearer ") :].strip()
     tenant = find_tenant_by_api_key(api_key)
     if not tenant:
         raise HTTPException(status_code=401, detail="Invalid API key")
     return tenant
 
 
-async def validate_model_for_tenant(
-    request: Request, tenant: Tenant = Depends(authenticate_tenant)
-) -> Tenant:
+async def validate_model_for_tenant(request: Request, tenant: Tenant = Depends(authenticate_tenant)) -> Tenant:
     try:
         body = await request.json()
     except Exception:

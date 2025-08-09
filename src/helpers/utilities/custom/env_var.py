@@ -33,27 +33,27 @@ class EnvConfig:
     @property
     def debug_logs_enabled(self) -> bool:
         return eval(os.getenv("DEBUG_LOGS_ENABLED", "False"))
-    
+
     @property
     def openai_secret_key(self) -> str | None:
         return os.getenv("OPENAI_SECRET_KEY", None)
-    
+
     @property
     def azure_openai_secret_key(self) -> str | None:
         return os.getenv("AZURE_OPENAI_SECRET_KEY", None)
-    
+
     @property
     def anthropic_secret_key(self) -> str | None:
         return os.getenv("ANTHROPIC_SECRET_KEY", None)
-    
+
     @property
     def google_secret_key(self) -> str | None:
         return os.getenv("GOOGLE_SECRET_KEY", None)
-    
+
     @property
     def xyzcloud_secret_key(self) -> str | None:
         return os.getenv("XYZCLOUD_SECRET_KEY", None)
-    
+
     @property
     def partnerai_secret_key(self) -> str | None:
         return os.getenv("PARTNERAI_SECRET_KEY", None)
